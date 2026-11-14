@@ -1,6 +1,7 @@
 import tempfile
 from pathlib import Path
 
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -176,6 +177,135 @@ class ResourceReadTests(TestCase):
         self.recurso.archivo = SimpleUploadedFile("script.exe", b"bad")
         with self.assertRaises(ValidationError):
             self.recurso.full_clean()
+
+
+class ResourceManagementTests(TestCase):
+    def setUp(self):
+        self.media_dir = tempfile.TemporaryDirectory()
+        self.media_override = override_settings(MEDIA_ROOT=self.media_dir.name)
+        self.media_override.enable()
+        self.materia = Materia.objects.create(
+            nombre="Biología",
+            semestre="Primer semestre",
+            facultad="Ciencias",
+        )
+        self.recurso = RecursoAcademico.objects.create(
+            titulo="Guía de álgebra",
+            descripcion="Ejercicios de práctica.",
+            materia=self.materia,
+            archivo=SimpleUploadedFile(
+                "guia.pdf",
+                b"contenido de prueba",
+                content_type="application/pdf",
+            ),
+        )
+        self.user = get_user_model().objects.create_user(
+            username="gestor",
+            password="contraseña-segura-123",
+        )
+
+    def tearDown(self):
+        self.media_override.disable()
+        self.media_dir.cleanup()
+        super().tearDown()
+
+    def test_create_requires_login(self):
+        response = self.client.get(reverse("resources:create"))
+
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next={reverse('resources:create')}",
+        )
+
+    def test_create_resource_with_uploaded_file(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("resources:create"),
+            {
+                "titulo": "Apuntes de biología",
+                "descripcion": "Resumen del primer tema.",
+                "tipo": RecursoAcademico.Tipo.APUNTE,
+                "materia": self.materia.pk,
+                "archivo": SimpleUploadedFile("apuntes.pdf", b"nuevo archivo"),
+            },
+        )
+
+        nuevo_recurso = RecursoAcademico.objects.get(titulo="Apuntes de biología")
+        self.assertRedirects(
+            response,
+            reverse("resources:detail", args=[nuevo_recurso.pk]),
+        )
+        self.assertTrue(nuevo_recurso.archivo.name.endswith("apuntes.pdf"))
+
+    def test_create_rejects_disallowed_file_extension(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("resources:create"),
+            {
+                "titulo": "Archivo no permitido",
+                "descripcion": "Este archivo debe rechazarse.",
+                "tipo": RecursoAcademico.Tipo.GUIA,
+                "materia": self.materia.pk,
+                "archivo": SimpleUploadedFile("programa.exe", b"contenido"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "exe")
+        self.assertFalse(
+            RecursoAcademico.objects.filter(titulo="Archivo no permitido").exists()
+        )
+
+    def test_update_preserves_file_when_no_replacement_is_uploaded(self):
+        self.client.force_login(self.user)
+        archivo_original = self.recurso.archivo.name
+        response = self.client.post(
+            reverse("resources:update", args=[self.recurso.pk]),
+            {
+                "titulo": "Guía actualizada",
+                "descripcion": "Descripción revisada.",
+                "tipo": RecursoAcademico.Tipo.GUIA,
+                "materia": self.materia.pk,
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("resources:detail", args=[self.recurso.pk]),
+        )
+        self.recurso.refresh_from_db()
+        self.assertEqual(self.recurso.titulo, "Guía actualizada")
+        self.assertEqual(self.recurso.archivo.name, archivo_original)
+
+    def test_delete_requires_confirmation_and_login(self):
+        response = self.client.get(reverse("resources:delete", args=[self.recurso.pk]))
+
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next={reverse('resources:delete', args=[self.recurso.pk])}",
+        )
+        self.assertTrue(RecursoAcademico.objects.filter(pk=self.recurso.pk).exists())
+
+    def test_delete_confirmation_page_does_not_delete_resource(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse("resources:delete", args=[self.recurso.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "¿Eliminar este recurso?")
+        self.assertTrue(RecursoAcademico.objects.filter(pk=self.recurso.pk).exists())
+
+    def test_confirmed_delete_removes_resource_and_uploaded_file(self):
+        self.client.force_login(self.user)
+        archivo = self.recurso.archivo
+        response = self.client.post(
+            reverse("resources:delete", args=[self.recurso.pk])
+        )
+
+        self.assertRedirects(response, reverse("resources:index"))
+        self.assertFalse(RecursoAcademico.objects.filter(pk=self.recurso.pk).exists())
+        self.assertFalse(archivo.storage.exists(archivo.name))
 
         oversized = SimpleUploadedFile(
             "large.pdf",

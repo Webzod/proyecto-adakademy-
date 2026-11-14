@@ -1,0 +1,32 @@
+{% extends "resources/base.html" %}
+
+{% block title %}Iniciar sesión · Aula Abierta{% endblock %}
+
+{% block content %}
+<section class="enter mx-auto max-w-md">
+  <div class="glass overflow-hidden rounded-3xl shadow-[0_20px_70px_-45px_rgba(25,25,70,.4)]">
+    <div class="bg-gradient-to-br from-violet-50/90 via-white/50 to-blue-50/80 px-6 py-8 text-center sm:px-9">
+      <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-electric text-xl font-extrabold text-white shadow-lg shadow-electric/20">A</span>
+      <h1 class="mt-5 text-3xl font-extrabold tracking-[-.04em]">Qué gusto verte</h1>
+      <p class="mt-2 text-sm text-slate-500">Inicia sesión para gestionar tus recursos.</p>
+    </div>
+    <form method="post" class="login-form space-y-5 p-6 sm:p-9">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors" role="alert">{{ form.non_field_errors }}</div>
+      {% endif %}
+      <div class="form-field">
+        <label for="{{ form.username.id_for_label }}" class="mb-2 block text-sm font-bold text-slate-700">Usuario</label>
+        <input type="text" name="{{ form.username.html_name }}" id="{{ form.username.id_for_label }}" value="{{ form.username.value|default_if_none:'' }}" autocomplete="username" required autofocus class="form-input">
+        {% if form.username.errors %}<div class="mt-2 text-sm font-semibold text-rose-700" role="alert">{{ form.username.errors }}</div>{% endif %}
+      </div>
+      <div class="form-field">
+        <label for="{{ form.password.id_for_label }}" class="mb-2 block text-sm font-bold text-slate-700">Contraseña</label>
+        <input type="password" name="{{ form.password.html_name }}" id="{{ form.password.id_for_label }}" autocomplete="current-password" required class="form-input">
+        {% if form.password.errors %}<div class="mt-2 text-sm font-semibold text-rose-700" role="alert">{{ form.password.errors }}</div>{% endif %}
+      </div>
+      <button type="submit" class="action-button w-full rounded-xl bg-electric px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-electric/20 hover:-translate-y-0.5 hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">Iniciar sesión</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

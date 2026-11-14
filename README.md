@@ -1,9 +1,10 @@
 # Aula Abierta
 
-Plataforma Django de solo lectura para explorar guías de estudio, apuntes y
-materiales de clase compartidos por materia, texto y tipo. La descripción de
-cada recurso permite consultar qué incluye antes de descargarlo. La aplicación
-no incorpora autenticación ni operaciones para crear, editar o eliminar recursos.
+Plataforma Django para explorar guías de estudio, apuntes y materiales de clase
+compartidos por materia, texto y tipo. Cada recurso tiene una página de detalle
+con descripción, comentarios y descarga. Los usuarios autenticados pueden
+publicar, editar y eliminar recursos; los visitantes pueden explorar y descargar
+materiales sin iniciar sesión.
 
 ## Desarrollo local (PowerShell)
 
@@ -14,8 +15,14 @@ python -m pip install -r requirements.txt
 npm install
 npm run build:css
 python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
 ```
+
+Inicia sesión en `/accounts/login/` para gestionar recursos. No hay registro
+público: crea y administra las cuentas desde `/admin/` con un superusuario.
+El borrado solicita confirmación y elimina también los comentarios y el archivo
+subido asociado.
 
 La hoja de estilos compilada se sirve desde `resources/static/resources/css/`;
 vuelve a ejecutar `npm run build:css` cuando cambies plantillas, configuración

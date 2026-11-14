@@ -49,10 +49,17 @@
 
   <div class="section-heading mb-5 flex items-center justify-between gap-4">
     <h2 class="text-lg font-extrabold tracking-tight">Recursos destacados</h2>
-    <p class="text-sm text-slate-500" aria-live="polite">
-      {{ page_obj.paginator.count }} recurso{{ page_obj.paginator.count|pluralize:"s" }}
-      {% if page_obj.paginator.count %}<span class="text-slate-400">· Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% endif %}
-    </p>
+    <div class="flex flex-wrap items-center justify-end gap-3">
+      <p class="text-sm text-slate-500" aria-live="polite">
+        {{ page_obj.paginator.count }} recurso{{ page_obj.paginator.count|pluralize:"s" }}
+        {% if page_obj.paginator.count %}<span class="text-slate-400">· Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% endif %}
+      </p>
+      {% if user.is_authenticated %}
+        <a href="{% url 'resources:create' %}" class="action-button inline-flex items-center gap-2 rounded-xl bg-electric px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-electric/20 hover:-translate-y-0.5 hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">
+          <span aria-hidden="true">＋</span> Nuevo recurso
+        </a>
+      {% endif %}
+    </div>
   </div>
 
   <div id="resource-grid" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

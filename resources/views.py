@@ -2,13 +2,16 @@ from datetime import timedelta
 import logging
 from pathlib import PurePosixPath
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import F, Q
 from django.http import FileResponse, Http404
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
+from .forms import RecursoAcademicoForm
 from .models import RecursoAcademico
 
 
@@ -103,6 +106,77 @@ def detail(request, pk):
     elif recent_views != viewed_resources:
         request.session[VIEW_SESSION_KEY] = recent_views
     return render(request, "resources/detail.html", {"recurso": recurso})
+
+
+@login_required
+def resource_create(request):
+    form = RecursoAcademicoForm(
+        request.POST if request.method == "POST" else None,
+        request.FILES if request.method == "POST" else None,
+    )
+    if request.method == "POST" and form.is_valid():
+        recurso = form.save()
+        messages.success(request, "El recurso se publicó correctamente.")
+        return redirect("resources:detail", pk=recurso.pk)
+
+    return render(
+        request,
+        "resources/resource_form.html",
+        {"form": form, "is_edit": False},
+    )
+
+
+@login_required
+def resource_update(request, pk):
+    recurso = get_object_or_404(RecursoAcademico, pk=pk)
+    archivo_anterior = recurso.archivo.name
+    form = RecursoAcademicoForm(
+        request.POST if request.method == "POST" else None,
+        request.FILES if request.method == "POST" else None,
+        instance=recurso,
+    )
+    if request.method == "POST" and form.is_valid():
+        recurso = form.save()
+        if recurso.archivo.name != archivo_anterior:
+            try:
+                recurso.archivo.storage.delete(archivo_anterior)
+            except OSError:
+                logger.exception(
+                    "No se pudo eliminar el archivo anterior del recurso %s",
+                    recurso.pk,
+                )
+        messages.success(request, "Los cambios se guardaron correctamente.")
+        return redirect("resources:detail", pk=recurso.pk)
+
+    return render(
+        request,
+        "resources/resource_form.html",
+        {"form": form, "is_edit": True, "recurso": recurso},
+    )
+
+
+@login_required
+def resource_delete(request, pk):
+    recurso = get_object_or_404(RecursoAcademico, pk=pk)
+    if request.method == "POST":
+        archivo = recurso.archivo
+        recurso_id = recurso.pk
+        recurso.delete()
+        try:
+            archivo.storage.delete(archivo.name)
+        except OSError:
+            logger.exception(
+                "No se pudo eliminar el archivo del recurso %s",
+                recurso_id,
+            )
+        messages.success(request, "El recurso se eliminó correctamente.")
+        return redirect("resources:index")
+
+    return render(
+        request,
+        "resources/resource_confirm_delete.html",
+        {"recurso": recurso},
+    )
 
 
 def download(request, pk):

@@ -226,6 +226,88 @@ html {
   animation-delay: 240ms;
 }
 
+.form-input {
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 0.75rem 0.9rem;
+  color: #171923;
+  font-size: 0.9rem;
+  transition:
+    border-color var(--motion-duration) var(--motion-ease),
+    box-shadow var(--motion-duration) var(--motion-ease),
+    background-color var(--motion-duration) var(--motion-ease);
+}
+
+.form-input:focus {
+  border-color: rgba(85, 70, 245, 0.65);
+  outline: none;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(85, 70, 245, 0.1);
+}
+
+.form-textarea {
+  min-height: 9rem;
+  resize: vertical;
+  line-height: 1.65;
+}
+
+.form-file {
+  padding: 0.45rem;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.form-file::file-selector-button {
+  margin-right: 0.75rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: #f5f3ff;
+  padding: 0.55rem 0.8rem;
+  color: #5546f5;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--motion-duration) var(--motion-ease);
+}
+
+.form-file::file-selector-button:hover {
+  background: #ede9fe;
+}
+
+.form-errors {
+  border: 1px solid #fecdd3;
+  border-radius: 0.8rem;
+  background: #fff1f2;
+  padding: 0.85rem 1rem;
+  color: #be123c;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.notice {
+  border: 1px solid;
+  border-radius: 0.9rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 650;
+  box-shadow: 0 10px 24px -20px rgba(25, 25, 70, 0.4);
+}
+
+.notice-success {
+  border-color: #bbf7d0;
+  background: rgba(240, 253, 244, 0.95);
+  color: #166534;
+}
+
+.notice-error {
+  border-color: #fecdd3;
+  background: rgba(255, 241, 242, 0.95);
+  color: #be123c;
+}
+
 .enter {
   animation: fade-up 700ms var(--motion-ease) both;
 }
