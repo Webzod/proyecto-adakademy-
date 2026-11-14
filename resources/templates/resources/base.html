@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fc">
+  <title>{% block title %}Aula Abierta{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] },
+          colors: { ink: "#171923", electric: "#5546f5", canvas: "#f7f8fc" }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: "Plus Jakarta Sans", sans-serif; }
+    .glass { background: rgba(255,255,255,.76); border: 1px solid rgba(226,232,240,.85); backdrop-filter: blur(18px); }
+    .resource-card { animation: rise-in .55s both; transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease; }
+    .resource-card:hover { transform: translateY(-7px) scale(1.012); box-shadow: 0 24px 55px -28px rgba(48,42,120,.32); border-color: rgba(85,70,245,.25); }
+    .enter { animation: rise-in .65s both; }
+    @keyframes rise-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-canvas text-ink antialiased selection:bg-electric/15">
+  <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+    <div class="absolute -right-32 -top-40 h-[28rem] w-[28rem] rounded-full bg-violet-200/40 blur-3xl"></div>
+    <div class="absolute -left-40 top-[35rem] h-[24rem] w-[24rem] rounded-full bg-blue-100/60 blur-3xl"></div>
+  </div>
+  <header class="sticky top-0 z-20 border-b border-slate-200/70 bg-white/70 backdrop-blur-xl">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8" aria-label="Navegación principal">
+      <a href="{% url 'resources:index' %}" class="group flex items-center gap-3 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">
+        <span class="grid h-10 w-10 place-items-center rounded-xl bg-electric text-lg font-extrabold text-white shadow-lg shadow-electric/20 transition-transform group-hover:rotate-[-6deg]">A</span>
+        <span class="text-base font-extrabold tracking-tight">aula<span class="text-electric">abierta</span></span>
+      </a>
+      <div class="flex items-center gap-2 sm:gap-7">
+        <a href="{% url 'resources:index' %}" class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Explorar</a>
+        <span class="hidden rounded-full border border-slate-200 bg-white/70 px-3 py-1.5 text-xs font-semibold text-slate-500 sm:inline-flex">Comunidad de aprendizaje</span>
+      </div>
+    </nav>
+  </header>
+  <main class="mx-auto min-h-[calc(100vh-9rem)] max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="border-t border-slate-200/70 bg-white/50">
+    <div class="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+      <p class="font-semibold">Aula Abierta <span class="font-normal">· Recursos para aprender en comunidad.</span></p>
+      <p>Comparte conocimiento, encuentra tu próximo apunte.</p>
+    </div>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

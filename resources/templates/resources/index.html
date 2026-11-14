@@ -1,0 +1,89 @@
+{% extends "resources/base.html" %}
+
+{% block title %}Explora recursos · Aula Abierta{% endblock %}
+
+{% block content %}
+<section class="enter">
+  <div class="mb-10 max-w-3xl">
+    <span class="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-100 bg-white/75 px-3.5 py-2 text-xs font-bold uppercase tracking-[.14em] text-electric shadow-sm">
+      <span class="h-2 w-2 rounded-full bg-electric"></span> Tu biblioteca universitaria
+    </span>
+    <h1 class="text-4xl font-extrabold leading-[1.1] tracking-[-.05em] sm:text-6xl">Aprender juntos.<br><span class="text-electric">Llegar más lejos.</span></h1>
+    <p class="mt-5 max-w-xl text-base leading-7 text-slate-500 sm:text-lg">Encuentra apuntes, guías y recursos compartidos por estudiantes como tú.</p>
+  </div>
+
+  <form method="get" class="glass mb-10 grid gap-3 rounded-2xl p-3 shadow-[0_12px_40px_-30px_rgba(25,25,70,.3)] sm:grid-cols-[1fr_230px_auto]">
+    <label class="group flex min-h-12 items-center gap-3 rounded-xl px-3 transition focus-within:bg-white focus-within:ring-2 focus-within:ring-electric/20">
+      <svg class="h-5 w-5 shrink-0 text-slate-400 transition group-focus-within:text-electric" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+      <span class="sr-only">Buscar por título</span>
+      <input id="resource-search" type="search" name="q" value="{{ query }}" placeholder="Busca por título..." class="w-full border-0 bg-transparent text-sm font-medium outline-none placeholder:text-slate-400 focus:ring-0">
+    </label>
+    <label class="flex min-h-12 items-center rounded-xl bg-white/50 px-3 transition focus-within:ring-2 focus-within:ring-electric/20">
+      <span class="sr-only">Filtrar por materia</span>
+      <select name="materia" class="w-full cursor-pointer border-0 bg-transparent text-sm font-semibold text-slate-600 outline-none focus:ring-0">
+        <option value="">Todas las materias</option>
+        {% for materia in materias %}
+          <option value="{{ materia.pk }}" {% if materia_seleccionada == materia.pk|stringformat:"s" %}selected{% endif %}>{{ materia.nombre }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="rounded-xl bg-electric px-6 py-3 text-sm font-bold text-white shadow-lg shadow-electric/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">Buscar recursos</button>
+  </form>
+
+  <div class="mb-5 flex items-center justify-between gap-4">
+    <h2 class="text-lg font-extrabold tracking-tight">Recursos destacados</h2>
+    <p class="text-sm text-slate-500"><span id="resource-count">{{ recursos|length }}</span> recurso{{ recursos|length|pluralize:"s" }}</p>
+  </div>
+
+  <div id="resource-grid" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {% for recurso in recursos %}
+      <article class="resource-card glass group flex flex-col overflow-hidden rounded-2xl p-5 shadow-[0_8px_30px_-24px_rgba(25,25,70,.35)]" style="animation-delay: {{ forloop.counter0 }}00ms" data-title="{{ recurso.titulo|lower }}">
+        <div class="mb-6 flex items-start justify-between gap-3">
+          <span class="rounded-lg bg-violet-50 px-3 py-1.5 text-xs font-bold text-electric">{{ recurso.materia.nombre }}</span>
+          <span class="rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-semibold text-slate-500">{{ recurso.materia.semestre }}</span>
+        </div>
+        <h3 class="text-lg font-extrabold leading-snug tracking-tight transition-colors group-hover:text-electric">{{ recurso.titulo }}</h3>
+        <p class="mt-2 line-clamp-3 flex-1 text-sm leading-6 text-slate-500">{{ recurso.descripcion }}</p>
+        <div class="mt-6 flex items-center justify-between border-t border-slate-200/70 pt-4">
+          <div class="flex items-center gap-3 text-xs font-medium text-slate-400">
+            <span class="inline-flex items-center gap-1" title="Vistas"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>{{ recurso.vistas }}</span>
+            <span class="inline-flex items-center gap-1" title="Descargas"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"></path><path d="M5 17v3h14v-3"></path></svg>{{ recurso.descargas }}</span>
+          </div>
+          <a href="{% url 'resources:detail' recurso.pk %}" class="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold text-electric transition hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">
+            Ver recurso <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+          </a>
+        </div>
+      </article>
+    {% empty %}
+      <div id="empty-state" class="glass col-span-full rounded-2xl px-6 py-16 text-center">
+        <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-violet-50 text-2xl text-electric">⌕</div>
+        <h3 class="mt-4 font-extrabold">Aún no hay recursos para mostrar</h3>
+        <p class="mt-2 text-sm text-slate-500">Prueba otra búsqueda o vuelve más tarde.</p>
+      </div>
+    {% endfor %}
+    <p id="no-live-results" class="hidden col-span-full py-12 text-center text-sm text-slate-500">No encontramos recursos que coincidan con tu búsqueda.</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const searchInput = document.getElementById("resource-search");
+  const cards = [...document.querySelectorAll(".resource-card")];
+  const noResults = document.getElementById("no-live-results");
+  const count = document.getElementById("resource-count");
+  const normalize = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  searchInput.addEventListener("input", () => {
+    const query = normalize(searchInput.value.trim());
+    let visible = 0;
+    cards.forEach((card) => {
+      const matches = normalize(card.dataset.title).includes(query);
+      card.classList.toggle("hidden", !matches);
+      if (matches) visible += 1;
+    });
+    count.textContent = visible;
+    noResults.classList.toggle("hidden", visible !== 0 || cards.length === 0);
+  });
+</script>
+{% endblock %}
