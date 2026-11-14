@@ -5,20 +5,20 @@
 {% block content %}
 <section class="enter">
   <div class="mb-10 max-w-3xl">
-    <span class="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-100 bg-white/75 px-3.5 py-2 text-xs font-bold uppercase tracking-[.14em] text-electric shadow-sm">
+    <span class="hero-tag mb-5 inline-flex items-center gap-2 rounded-full border border-violet-100 bg-white/75 px-3.5 py-2 text-xs font-bold uppercase tracking-[.14em] text-electric shadow-sm">
       <span class="h-2 w-2 rounded-full bg-electric"></span> Tu biblioteca universitaria
     </span>
-    <h1 class="text-4xl font-extrabold leading-[1.1] tracking-[-.05em] sm:text-6xl">Aprender juntos.<br><span class="text-electric">Llegar más lejos.</span></h1>
-    <p class="mt-5 max-w-xl text-base leading-7 text-slate-500 sm:text-lg">Explora guías, apuntes y materiales de clase compartidos por estudiantes. Revisa qué incluye cada recurso y encuentra el material que necesitas.</p>
+    <h1 class="hero-title text-4xl font-extrabold leading-[1.1] tracking-[-.05em] sm:text-6xl">Aprender juntos.<br><span class="text-electric">Llegar más lejos.</span></h1>
+    <p class="hero-copy mt-5 max-w-xl text-base leading-7 text-slate-500 sm:text-lg">Explora guías, apuntes y materiales de clase compartidos por estudiantes. Revisa qué incluye cada recurso y encuentra el material que necesitas.</p>
   </div>
 
-  <form method="get" class="glass mb-10 grid gap-3 rounded-2xl p-3 shadow-[0_12px_40px_-30px_rgba(25,25,70,.3)] md:grid-cols-2 lg:grid-cols-[1fr_190px_170px_170px_auto]">
-    <label class="group flex min-h-12 items-center gap-3 rounded-xl px-3 transition focus-within:bg-white focus-within:ring-2 focus-within:ring-electric/20">
+  <form method="get" class="search-panel glass mb-10 grid gap-3 rounded-2xl p-3 shadow-[0_12px_40px_-30px_rgba(25,25,70,.3)] md:grid-cols-2 lg:grid-cols-[1fr_190px_170px_170px_auto]">
+    <label class="filter-control group flex min-h-12 items-center gap-3 rounded-xl px-3 focus-within:bg-white focus-within:ring-2 focus-within:ring-electric/20">
       <svg class="h-5 w-5 shrink-0 text-slate-400 transition group-focus-within:text-electric" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
       <span class="sr-only">Buscar recursos</span>
       <input id="resource-search" type="search" name="q" value="{{ query }}" placeholder="Título, descripción o facultad..." class="w-full border-0 bg-transparent text-sm font-medium outline-none placeholder:text-slate-400 focus:ring-0">
     </label>
-    <label class="flex min-h-12 items-center rounded-xl bg-white/50 px-3 transition focus-within:ring-2 focus-within:ring-electric/20">
+    <label class="filter-control flex min-h-12 items-center rounded-xl bg-white/50 px-3 focus-within:ring-2 focus-within:ring-electric/20">
       <span class="sr-only">Filtrar por materia</span>
       <select name="materia" class="w-full cursor-pointer border-0 bg-transparent text-sm font-semibold text-slate-600 outline-none focus:ring-0">
         <option value="">Materia</option>
@@ -27,7 +27,7 @@
         {% endfor %}
       </select>
     </label>
-    <label class="flex min-h-12 items-center rounded-xl bg-white/50 px-3 transition focus-within:ring-2 focus-within:ring-electric/20">
+    <label class="filter-control flex min-h-12 items-center rounded-xl bg-white/50 px-3 focus-within:ring-2 focus-within:ring-electric/20">
       <span class="sr-only">Filtrar por tipo de material</span>
       <select name="tipo" class="w-full cursor-pointer border-0 bg-transparent text-sm font-semibold text-slate-600 outline-none focus:ring-0">
         <option value="">Todos los materiales</option>
@@ -36,7 +36,7 @@
         {% endfor %}
       </select>
     </label>
-    <label class="flex min-h-12 items-center rounded-xl bg-white/50 px-3 transition focus-within:ring-2 focus-within:ring-electric/20">
+    <label class="filter-control flex min-h-12 items-center rounded-xl bg-white/50 px-3 focus-within:ring-2 focus-within:ring-electric/20">
       <span class="sr-only">Ordenar recursos</span>
       <select name="orden" class="w-full cursor-pointer border-0 bg-transparent text-sm font-semibold text-slate-600 outline-none focus:ring-0">
         <option value="recientes" {% if orden == "recientes" %}selected{% endif %}>Más recientes</option>
@@ -44,10 +44,10 @@
         <option value="titulo" {% if orden == "titulo" %}selected{% endif %}>Título A-Z</option>
       </select>
     </label>
-    <button type="submit" class="rounded-xl bg-electric px-6 py-3 text-sm font-bold text-white shadow-lg shadow-electric/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">Buscar recursos</button>
+    <button type="submit" class="action-button rounded-xl bg-electric px-6 py-3 text-sm font-bold text-white shadow-lg shadow-electric/20 hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">Buscar recursos</button>
   </form>
 
-  <div class="mb-5 flex items-center justify-between gap-4">
+  <div class="section-heading mb-5 flex items-center justify-between gap-4">
     <h2 class="text-lg font-extrabold tracking-tight">Recursos destacados</h2>
     <p class="text-sm text-slate-500" aria-live="polite">
       {{ page_obj.paginator.count }} recurso{{ page_obj.paginator.count|pluralize:"s" }}
@@ -75,7 +75,7 @@
         </div>
       </article>
     {% empty %}
-      <div class="glass col-span-full rounded-2xl px-6 py-16 text-center">
+      <div class="empty-state glass col-span-full rounded-2xl px-6 py-16 text-center">
         <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-violet-50 text-2xl text-electric">⌕</div>
         <h3 class="mt-4 font-extrabold">{% if query or materia_seleccionada or tipo_seleccionado %}No encontramos recursos{% else %}Aún no hay recursos para mostrar{% endif %}</h3>
         <p class="mt-2 text-sm text-slate-500">{% if query or materia_seleccionada or tipo_seleccionado %}Prueba con otros términos o cambia los filtros.{% else %}Vuelve más tarde para descubrir nuevos materiales.{% endif %}</p>
@@ -86,11 +86,11 @@
   {% if page_obj.paginator.num_pages > 1 %}
     <nav class="mt-9 flex flex-wrap items-center justify-center gap-2" aria-label="Paginación de recursos">
       {% if page_obj.has_previous %}
-        <a href="?q={{ query|urlencode }}&amp;materia={{ materia_seleccionada|urlencode }}&amp;tipo={{ tipo_seleccionado|urlencode }}&amp;orden={{ orden }}&amp;page={{ page_obj.previous_page_number }}" class="rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-electric/30 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Anterior</a>
+        <a href="?q={{ query|urlencode }}&amp;materia={{ materia_seleccionada|urlencode }}&amp;tipo={{ tipo_seleccionado|urlencode }}&amp;orden={{ orden }}&amp;page={{ page_obj.previous_page_number }}" class="pagination-link rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-bold text-slate-600 hover:border-electric/30 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Anterior</a>
       {% endif %}
       <span class="px-3 text-sm font-semibold text-slate-500" aria-current="page">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
       {% if page_obj.has_next %}
-        <a href="?q={{ query|urlencode }}&amp;materia={{ materia_seleccionada|urlencode }}&amp;tipo={{ tipo_seleccionado|urlencode }}&amp;orden={{ orden }}&amp;page={{ page_obj.next_page_number }}" class="rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-electric/30 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Siguiente</a>
+        <a href="?q={{ query|urlencode }}&amp;materia={{ materia_seleccionada|urlencode }}&amp;tipo={{ tipo_seleccionado|urlencode }}&amp;orden={{ orden }}&amp;page={{ page_obj.next_page_number }}" class="pagination-link rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-bold text-slate-600 hover:border-electric/30 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Siguiente</a>
       {% endif %}
     </nav>
   {% endif %}
