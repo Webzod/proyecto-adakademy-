@@ -1,4 +1,7 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
+
+from .validators import validate_file_size
 
 
 class Materia(models.Model):
@@ -16,9 +19,40 @@ class Materia(models.Model):
 
 
 class RecursoAcademico(models.Model):
+    class Tipo(models.TextChoices):
+        GUIA = "guia", "Guía de estudio"
+        APUNTE = "apunte", "Apunte"
+        MATERIAL_CLASE = "clase", "Material de clase"
+
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField()
-    archivo = models.FileField(upload_to="recursos/")
+    tipo = models.CharField(
+        max_length=20,
+        choices=Tipo.choices,
+        default=Tipo.GUIA,
+    )
+    archivo = models.FileField(
+        upload_to="recursos/",
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=[
+                    "csv",
+                    "doc",
+                    "docx",
+                    "jpg",
+                    "jpeg",
+                    "pdf",
+                    "png",
+                    "ppt",
+                    "pptx",
+                    "txt",
+                    "xls",
+                    "xlsx",
+                ]
+            ),
+            validate_file_size,
+        ],
+    )
     materia = models.ForeignKey(
         Materia,
         on_delete=models.CASCADE,

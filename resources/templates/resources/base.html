@@ -1,36 +1,12 @@
 <!doctype html>
+{% load static %}
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f7f8fc">
   <title>{% block title %}Aula Abierta{% endblock %}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ["Plus Jakarta Sans", "sans-serif"] },
-          colors: { ink: "#171923", electric: "#5546f5", canvas: "#f7f8fc" }
-        }
-      }
-    };
-  </script>
-  <style>
-    :root { color-scheme: light; }
-    body { font-family: "Plus Jakarta Sans", sans-serif; }
-    .glass { background: rgba(255,255,255,.76); border: 1px solid rgba(226,232,240,.85); backdrop-filter: blur(18px); }
-    .resource-card { animation: rise-in .55s both; transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease; }
-    .resource-card:hover { transform: translateY(-7px) scale(1.012); box-shadow: 0 24px 55px -28px rgba(48,42,120,.32); border-color: rgba(85,70,245,.25); }
-    .enter { animation: rise-in .65s both; }
-    @keyframes rise-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
-    }
-  </style>
+  <link rel="stylesheet" href="{% static 'resources/css/app.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-canvas text-ink antialiased selection:bg-electric/15">
