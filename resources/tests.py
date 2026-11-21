@@ -295,6 +295,41 @@ class ResourceReadTests(TestCase):
             "/?q=%C3%A1lgebra&materia=Biolog%C3%ADa",
         )
 
+    def test_combined_filters_and_sort_are_applied(self):
+        RecursoAcademico.objects.create(
+            titulo="Guía avanzada",
+            descripcion="Ejercicios de práctica.",
+            tipo=RecursoAcademico.Tipo.GUIA,
+            materia=self.materia,
+            archivo=SimpleUploadedFile("avanzada.pdf", b"%PDF-fake"),
+        )
+
+        response = self.client.get(
+            "/",
+            {
+                "q": "guía",
+                "materia": "Biología",
+                "tipo": RecursoAcademico.Tipo.GUIA,
+                "orden": "titulo",
+            },
+        )
+
+        titles = [
+            resource.titulo
+            for resource in response.context["page_obj"].object_list
+        ]
+        self.assertIn("Guía de álgebra", titles)
+        self.assertIn("Guía avanzada", titles)
+        self.assertEqual(titles, sorted(titles, key=str.casefold))
+
+    def test_filter_controls_submit_automatically(self):
+        response = self.client.get("/")
+
+        self.assertContains(
+            response,
+            'document.querySelectorAll(\'form[method="get"] select\')',
+        )
+
     def test_saved_resources_filter(self):
         self.client.post(
             reverse("resources:favorite", args=[self.recurso.pk]),

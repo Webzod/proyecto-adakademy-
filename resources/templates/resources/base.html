@@ -38,6 +38,9 @@
     </div>
   </footer>
   <script>
+    document.querySelectorAll('form[method="get"] select').forEach((select) => {
+      select.addEventListener("change", () => select.form.submit());
+    });
     document.addEventListener("submit", (event) => {
       const submit = event.target.querySelector('[type="submit"]');
       if (!submit || submit.disabled) return;

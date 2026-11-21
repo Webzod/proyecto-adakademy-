@@ -13,6 +13,9 @@
   </div>
 
   <form method="get" class="glass mb-10 grid gap-3 rounded-2xl p-3 shadow-[0_12px_40px_-30px_rgba(25,25,70,.3)] md:grid-cols-2 lg:grid-cols-[1fr_190px_170px_170px_auto]">
+    {% if favoritos_solo %}
+      <input type="hidden" name="guardados" value="1">
+    {% endif %}
     <label class="group flex min-h-12 items-center gap-3 rounded-xl px-3 transition focus-within:bg-white focus-within:ring-2 focus-within:ring-electric/20">
       <svg class="h-5 w-5 shrink-0 text-slate-400 transition group-focus-within:text-electric" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
       <span class="sr-only">Buscar recursos</span>
@@ -50,7 +53,7 @@
   <div class="mb-5 flex items-center justify-between gap-4">
     <div class="flex items-center gap-3">
       <h2 class="text-lg font-extrabold tracking-tight">{% if favoritos_solo %}Recursos guardados{% else %}Recursos destacados{% endif %}</h2>
-      <a href="{% if favoritos_solo %}{% url 'resources:index' %}{% else %}?guardados=1{% endif %}" class="rounded-lg border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-bold {% if favoritos_solo %}text-electric{% else %}text-slate-600{% endif %} hover:border-electric/30 hover:text-electric">
+      <a href="{% if favoritos_solo %}{% url 'resources:index' %}{% else %}?q={{ query|urlencode }}&amp;materia={{ materia_seleccionada|urlencode }}&amp;tipo={{ tipo_seleccionado|urlencode }}&amp;orden={{ orden }}&amp;guardados=1{% endif %}" class="rounded-lg border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-bold {% if favoritos_solo %}text-electric{% else %}text-slate-600{% endif %} hover:border-electric/30 hover:text-electric">
         {% if favoritos_solo %}Ver todos{% else %}☆ Guardados{% endif %}
       </a>
     </div>
