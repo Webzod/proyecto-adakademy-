@@ -179,7 +179,8 @@ def resource_delete(request, pk):
     )
 
 
-def download(request, pk):
+def download(_request, pk):
+    del _request
     recurso = get_object_or_404(RecursoAcademico, pk=pk)
     try:
         archivo = recurso.archivo.open("rb")
