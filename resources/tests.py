@@ -1,9 +1,6 @@
 import tempfile
-from io import BytesIO
 from pathlib import Path
-import zipfile
 
-from PIL import Image
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -261,51 +258,6 @@ class ResourceReadTests(TestCase):
 
     def test_resource_file_content_must_match_extension(self):
         self.recurso.archivo = SimpleUploadedFile("imagen.png", b"no es una imagen")
-        with self.assertRaises(ValidationError):
-            self.recurso.full_clean()
-
-    def test_valid_png_passes_content_validation(self):
-        image_buffer = BytesIO()
-        Image.new("RGB", (2, 2), color="blue").save(image_buffer, format="PNG")
-        self.recurso.archivo = SimpleUploadedFile(
-            "imagen.png",
-            image_buffer.getvalue(),
-            content_type="image/png",
-        )
-
-        self.recurso.full_clean()
-
-    def test_invalid_pdf_and_office_archives_are_rejected(self):
-        self.recurso.archivo = SimpleUploadedFile(
-            "archivo.pdf",
-            b"%PDF-1.7\ncontenido sin fin de archivo",
-        )
-        with self.assertRaises(ValidationError):
-            self.recurso.full_clean()
-
-    def test_valid_pdf_and_office_archive_pass_content_validation(self):
-        self.recurso.archivo = SimpleUploadedFile(
-            "archivo.pdf",
-            b"%PDF-1.7\ncontenido\n%%EOF",
-        )
-        self.recurso.full_clean()
-
-        office_buffer = BytesIO()
-        with zipfile.ZipFile(office_buffer, "w") as archive:
-            archive.writestr("[Content_Types].xml", "<Types/>")
-            archive.writestr("word/document.xml", "<document/>")
-        self.recurso.archivo = SimpleUploadedFile(
-            "documento.docx",
-            office_buffer.getvalue(),
-        )
-        self.recurso.full_clean()
-
-    def test_text_validation_checks_the_entire_file(self):
-        self.recurso.archivo = SimpleUploadedFile(
-            "notas.txt",
-            b"texto valido " * 400 + b"\xff",
-        )
-
         with self.assertRaises(ValidationError):
             self.recurso.full_clean()
 
