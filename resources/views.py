@@ -15,7 +15,11 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.http import url_has_allowed_host_and_scheme
 
+<<<<<<< HEAD
 from .forms import ComentarioForm, RegistroForm, RecursoAcademicoForm
+=======
+from .forms import RegistroForm, RecursoAcademicoForm
+>>>>>>> fe5b15ba969dcf698faf737a3615f4287e3fee9b
 from .models import RecursoAcademico
 
 
@@ -59,6 +63,7 @@ def register(request):
     return render(request, "registration/register.html", {"form": form})
 
 
+<<<<<<< HEAD
 def normalize_search_text(value):
     text = unicodedata.normalize("NFKD", str(value))
     text = "".join(character for character in text if not unicodedata.combining(character))
@@ -92,6 +97,8 @@ def search_word_matches(query_word, resource_words):
     return False
 
 
+=======
+>>>>>>> fe5b15ba969dcf698faf737a3615f4287e3fee9b
 def index(request):
     recursos = RecursoAcademico.objects.select_related("materia")
     query = request.GET.get("q", "").strip()

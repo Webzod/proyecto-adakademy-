@@ -287,6 +287,16 @@ html {
   font-weight: 600;
 }
 
+.form-help ul {
+  margin-top: 0.4rem;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
+.form-help li + li {
+  margin-top: 0.2rem;
+}
+
 .notice {
   border: 1px solid;
   border-radius: 0.9rem;
