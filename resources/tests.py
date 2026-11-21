@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import Materia, RecursoAcademico
+from .models import Comentario, Materia, RecursoAcademico
 from .validators import MAX_RESOURCE_FILE_SIZE
 
 
@@ -184,3 +184,58 @@ class ResourceReadTests(TestCase):
         self.recurso.archivo = oversized
         with self.assertRaises(ValidationError):
             self.recurso.full_clean()
+
+    def test_user_can_publish_comment(self):
+        response = self.client.post(
+            reverse("resources:detail", args=[self.recurso.pk]),
+            {"texto": "Este recurso fue muy útil."},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("resources:detail", args=[self.recurso.pk]),
+        )
+        self.assertTrue(
+            Comentario.objects.filter(
+                recurso=self.recurso,
+                texto="Este recurso fue muy útil.",
+            ).exists()
+        )
+
+    def test_comment_cannot_be_empty(self):
+        response = self.client.post(
+            reverse("resources:detail", args=[self.recurso.pk]),
+            {"texto": "   "},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Comentario.objects.exists())
+
+    def test_resource_can_be_saved_and_unsaved_in_session(self):
+        url = reverse("resources:favorite", args=[self.recurso.pk])
+        first_response = self.client.post(url, {"next": "/"})
+        second_response = self.client.post(url, {"next": "/"})
+
+        self.assertRedirects(first_response, "/")
+        self.assertRedirects(second_response, "/")
+        self.assertNotIn(
+            str(self.recurso.pk),
+            self.client.session["favorite_resources"],
+        )
+
+    def test_saved_resources_filter(self):
+        self.client.post(
+            reverse("resources:favorite", args=[self.recurso.pk]),
+            {"next": "/"},
+        )
+        RecursoAcademico.objects.create(
+            titulo="Otro recurso",
+            descripcion="Material diferente.",
+            materia=self.materia,
+            archivo=SimpleUploadedFile("otro.pdf", b"contenido"),
+        )
+
+        response = self.client.get("/", {"guardados": "1"})
+
+        self.assertContains(response, self.recurso.titulo)
+        self.assertNotContains(response, "Otro recurso")

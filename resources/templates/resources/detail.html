@@ -22,6 +22,11 @@
       <p class="mt-4 whitespace-pre-line text-base leading-8 text-slate-600">{{ recurso.descripcion }}</p>
 
       <div class="mt-8 flex flex-wrap items-center gap-3">
+        {% if extension == ".pdf" or extension == ".jpg" or extension == ".jpeg" or extension == ".png" %}
+          <a href="{{ recurso.archivo.url }}" target="_blank" rel="noopener" class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 shadow-sm transition hover:border-electric/30 hover:text-electric">
+            {% if extension == ".pdf" %}Previsualizar PDF{% else %}Ver imagen{% endif %}
+          </a>
+        {% endif %}
         <a href="{% url 'resources:download' recurso.pk %}" class="inline-flex items-center gap-2 rounded-xl bg-electric px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-electric/20 transition hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"></path><path d="M5 17v3h14v-3"></path></svg>
           Descargar recurso
@@ -29,7 +34,23 @@
         <div class="flex items-center gap-4 rounded-xl border border-slate-200/80 bg-white/60 px-4 py-3 text-xs font-semibold text-slate-500">
           <span>{{ recurso.vistas }} vistas</span><span class="h-4 w-px bg-slate-200"></span><span>{{ recurso.descargas }} descargas</span>
         </div>
+        <form method="post" action="{% url 'resources:favorite' recurso.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button type="submit" class="rounded-xl border {% if is_favorite %}border-electric bg-violet-50 text-electric{% else %}border-slate-200 bg-white text-slate-600{% endif %} px-4 py-3 text-sm font-bold hover:border-electric/30">
+            {% if is_favorite %}★ Guardado{% else %}☆ Guardar{% endif %}
+          </button>
+        </form>
       </div>
+      <div class="mt-5 rounded-xl border border-slate-200/70 bg-slate-50/70 px-4 py-3 text-xs text-slate-500">
+        Archivo: <span class="font-bold">{{ recurso.archivo.name|default:"No disponible" }}</span>
+        {% if extension %}<span class="ml-2 rounded-md bg-white px-2 py-1 font-bold uppercase">{{ extension|slice:"1:" }}</span>{% endif %}
+      </div>
+      {% if extension == ".pdf" %}
+        <iframe class="mt-5 h-[32rem] w-full rounded-xl border border-slate-200 bg-white" src="{{ recurso.archivo.url }}" title="Vista previa de {{ recurso.titulo }}"></iframe>
+      {% elif extension == ".jpg" or extension == ".jpeg" or extension == ".png" %}
+        <img class="mt-5 max-h-[32rem] w-full rounded-xl border border-slate-200 object-contain" src="{{ recurso.archivo.url }}" alt="Vista previa de {{ recurso.titulo }}">
+      {% endif %}
     </div>
   </article>
 
@@ -54,6 +75,13 @@
         </div>
       {% endfor %}
     </div>
+    <form method="post" class="glass mt-5 rounded-2xl p-5 sm:p-7">
+      {% csrf_token %}
+      <label for="{{ comment_form.texto.id_for_label }}" class="mb-2 block text-sm font-bold text-slate-700">{{ comment_form.texto.label }}</label>
+      {{ comment_form.texto }}
+      {% if comment_form.texto.errors %}<p class="mt-2 text-sm font-semibold text-rose-700">{{ comment_form.texto.errors }}</p>{% endif %}
+      <button type="submit" class="mt-4 rounded-xl bg-electric px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">Publicar comentario</button>
+    </form>
   </section>
 </div>
 {% endblock %}

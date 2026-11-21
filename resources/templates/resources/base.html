@@ -10,6 +10,7 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-canvas text-ink antialiased selection:bg-electric/15">
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
   <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
     <div class="absolute -right-32 -top-40 h-[28rem] w-[28rem] rounded-full bg-violet-200/40 blur-3xl"></div>
     <div class="absolute -left-40 top-[35rem] h-[24rem] w-[24rem] rounded-full bg-blue-100/60 blur-3xl"></div>
@@ -26,7 +27,7 @@
       </div>
     </nav>
   </header>
-  <main class="mx-auto min-h-[calc(100vh-9rem)] max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
+  <main id="main-content" class="mx-auto min-h-[calc(100vh-9rem)] max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
     {% block content %}{% endblock %}
   </main>
   <footer class="border-t border-slate-200/70 bg-white/50">

@@ -48,7 +48,12 @@
   </form>
 
   <div class="mb-5 flex items-center justify-between gap-4">
-    <h2 class="text-lg font-extrabold tracking-tight">Recursos destacados</h2>
+    <div class="flex items-center gap-3">
+      <h2 class="text-lg font-extrabold tracking-tight">{% if favoritos_solo %}Recursos guardados{% else %}Recursos destacados{% endif %}</h2>
+      <a href="{% if favoritos_solo %}{% url 'resources:index' %}{% else %}?guardados=1{% endif %}" class="rounded-lg border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-bold {% if favoritos_solo %}text-electric{% else %}text-slate-600{% endif %} hover:border-electric/30 hover:text-electric">
+        {% if favoritos_solo %}Ver todos{% else %}☆ Guardados{% endif %}
+      </a>
+    </div>
     <p class="text-sm text-slate-500" aria-live="polite">
       {{ page_obj.paginator.count }} recurso{{ page_obj.paginator.count|pluralize:"s" }}
       {% if page_obj.paginator.count %}<span class="text-slate-400">· Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% endif %}
@@ -69,9 +74,18 @@
             <span class="inline-flex items-center gap-1" title="Vistas"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>{{ recurso.vistas }}</span>
             <span class="inline-flex items-center gap-1" title="Descargas"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"></path><path d="M5 17v3h14v-3"></path></svg>{{ recurso.descargas }}</span>
           </div>
-          <a href="{% url 'resources:detail' recurso.pk %}" class="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold text-electric transition hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">
-            Ver recurso <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
-          </a>
+          <div class="flex items-center gap-1">
+            <form method="post" action="{% url 'resources:favorite' recurso.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="grid h-8 w-8 place-items-center rounded-lg {% if recurso.pk|stringformat:'s' in favoritos %}bg-violet-50 text-electric{% else %}text-slate-400 hover:bg-violet-50 hover:text-electric{% endif %}" aria-label="{% if recurso.pk|stringformat:'s' in favoritos %}Quitar de guardados{% else %}Guardar recurso{% endif %}">
+                {% if recurso.pk|stringformat:"s" in favoritos %}★{% else %}☆{% endif %}
+              </button>
+            </form>
+            <a href="{% url 'resources:detail' recurso.pk %}" class="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-bold text-electric transition hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">
+              Ver recurso <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+            </a>
+          </div>
         </div>
       </article>
     {% empty %}

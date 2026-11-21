@@ -5,16 +5,18 @@ from pathlib import PurePosixPath
 from django.core.paginator import Paginator
 from django.db.models import F, Q
 from django.http import FileResponse, Http404
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
+from .forms import ComentarioForm
 from .models import RecursoAcademico
 
 
 logger = logging.getLogger(__name__)
 VIEW_COUNT_WINDOW_SECONDS = 30 * 60
 VIEW_SESSION_KEY = "resource_views"
+FAVORITES_SESSION_KEY = "favorite_resources"
 SORT_OPTIONS = {
     "recientes": ("-fecha_subida", "-pk"),
     "populares": ("-vistas", "-fecha_subida", "-pk"),
@@ -37,6 +39,7 @@ def index(request):
     materia = request.GET.get("materia", "")
     tipo = request.GET.get("tipo", "")
     orden = request.GET.get("orden", "recientes")
+    favoritos_solo = request.GET.get("guardados") == "1"
 
     valid_types = {value for value, _ in RecursoAcademico.Tipo.choices}
     if tipo not in valid_types:
@@ -55,6 +58,16 @@ def index(request):
         recursos = recursos.filter(materia__nombre__iexact=materia)
     if tipo:
         recursos = recursos.filter(tipo=tipo)
+    favoritos = request.session.get(FAVORITES_SESSION_KEY, [])
+    if not isinstance(favoritos, list):
+        favoritos = []
+    if favoritos_solo:
+        favoritos_validos = [
+            resource_id
+            for resource_id in favoritos
+            if str(resource_id).isdigit()
+        ]
+        recursos = recursos.filter(pk__in=favoritos_validos)
 
     if orden not in SORT_OPTIONS:
         orden = "recientes"
@@ -72,6 +85,8 @@ def index(request):
             "materia_seleccionada": materia,
             "tipo_seleccionado": tipo,
             "orden": orden,
+            "favoritos": {str(resource_id) for resource_id in favoritos},
+            "favoritos_solo": favoritos_solo,
         },
     )
 
@@ -102,10 +117,56 @@ def detail(request, pk):
         recurso.vistas += 1
     elif recent_views != viewed_resources:
         request.session[VIEW_SESSION_KEY] = recent_views
-    return render(request, "resources/detail.html", {"recurso": recurso})
+    if request.method == "POST":
+        form = ComentarioForm(request.POST)
+        if form.is_valid():
+            comentario = form.save(commit=False)
+            comentario.recurso = recurso
+            comentario.save()
+            return redirect("resources:detail", pk=recurso.pk)
+    else:
+        form = ComentarioForm()
+
+    favoritos = request.session.get(FAVORITES_SESSION_KEY, [])
+    if not isinstance(favoritos, list):
+        favoritos = []
+    extension = PurePosixPath(recurso.archivo.name).suffix.lower()
+    return render(
+        request,
+        "resources/detail.html",
+        {
+            "recurso": recurso,
+            "comment_form": form,
+            "is_favorite": str(recurso.pk) in {str(resource_id) for resource_id in favoritos},
+            "extension": extension,
+        },
+    )
 
 
-def download(request, pk):
+def toggle_favorite(request, pk):
+    recurso = get_object_or_404(RecursoAcademico, pk=pk)
+    if request.method == "POST":
+        favoritos = request.session.get(FAVORITES_SESSION_KEY, [])
+        if not isinstance(favoritos, list):
+            favoritos = []
+        favoritos = {str(resource_id) for resource_id in favoritos}
+        resource_id = str(recurso.pk)
+        if resource_id in favoritos:
+            favoritos.remove(resource_id)
+        else:
+            favoritos.add(resource_id)
+        request.session[FAVORITES_SESSION_KEY] = sorted(
+            favoritos,
+            key=int,
+        )
+    next_url = request.POST.get("next")
+    if next_url:
+        return redirect(next_url)
+    return redirect("resources:detail", pk=recurso.pk)
+
+
+def download(_request, pk):
+    del _request
     recurso = get_object_or_404(RecursoAcademico, pk=pk)
     try:
         archivo = recurso.archivo.open("rb")
