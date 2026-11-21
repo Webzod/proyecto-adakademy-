@@ -330,6 +330,56 @@ class ResourceReadTests(TestCase):
             'document.querySelectorAll(\'form[method="get"] select\')',
         )
 
+    def test_search_matches_accentless_and_resource_type(self):
+        response = self.client.get("/", {"q": "guia"})
+        self.assertContains(response, "Guía de álgebra")
+
+        response = self.client.get("/", {"q": "estudio"})
+        self.assertContains(response, "Guía de álgebra")
+
+    def test_search_matches_plural_and_terms_across_resource_fields(self):
+        response = self.client.get("/", {"q": "guías biología"})
+        self.assertContains(response, "Guía de álgebra")
+
+    def test_search_matches_plural_apuntes_with_singular_title(self):
+        RecursoAcademico.objects.create(
+            titulo="Apunte de historia",
+            descripcion="Material de consulta.",
+            tipo=RecursoAcademico.Tipo.APUNTE,
+            materia=self.materia,
+            archivo=SimpleUploadedFile("historia.txt", b"contenido"),
+        )
+
+        response = self.client.get("/", {"q": "apuntes"})
+
+        self.assertContains(response, "Apunte de historia")
+
+    def test_search_matches_filename(self):
+        self.recurso.archivo.name = "recursos/material-examen.pdf"
+        self.recurso.save(update_fields=["archivo"])
+
+        response = self.client.get("/", {"q": "examen"})
+
+        self.assertContains(response, self.recurso.titulo)
+
+    def test_apuntes_search_matches_title(self):
+        RecursoAcademico.objects.create(
+            titulo="Apuntes de célula",
+            descripcion="Resumen celular.",
+            tipo=RecursoAcademico.Tipo.APUNTE,
+            materia=self.materia,
+            archivo=SimpleUploadedFile("apuntes.txt", b"contenido"),
+        )
+
+        response = self.client.get("/", {"q": "apuntes"})
+
+        self.assertContains(response, "Apuntes de célula")
+
+    def test_skip_navigation_link_is_not_rendered(self):
+        response = self.client.get("/")
+
+        self.assertNotContains(response, "Saltar al contenido principal")
+
     def test_saved_resources_filter(self):
         self.client.post(
             reverse("resources:favorite", args=[self.recurso.pk]),

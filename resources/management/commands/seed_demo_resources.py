@@ -24,6 +24,24 @@ class Command(BaseCommand):
                 defaults={"semestre": semestre, "facultad": facultad},
             )
 
+        desired_materias = [
+            ("Biología", "Primer semestre", "Ciencias"),
+            ("Castellano", "Primer semestre", "Humanidades"),
+            ("Física", "Segundo semestre", "Ingeniería"),
+            ("Inglés", "Primer semestre", "Idiomas"),
+            ("Matemáticas", "Primer semestre", "Ciencias"),
+            ("Química", "Segundo semestre", "Ciencias"),
+        ]
+        existing_materias = list(Materia.objects.order_by("pk"))
+        for materia, values in zip(existing_materias, desired_materias):
+            nombre, semestre, facultad = values
+            materia.nombre = nombre
+            materia.semestre = semestre
+            materia.facultad = facultad
+            materia.save(update_fields=["nombre", "semestre", "facultad"])
+        for materia in materia_objects.values():
+            materia.refresh_from_db()
+
         demos = [
             ("Guía de álgebra básica", "Conceptos, ejemplos y ejercicios resueltos.", "guia", "Matemáticas"),
             ("Apuntes de célula", "Resumen de la estructura y funciones celulares.", "apunte", "Biología"),
@@ -32,9 +50,52 @@ class Command(BaseCommand):
             ("Ortografía y redacción", "Reglas prácticas y ejemplos para mejorar los textos.", "guia", "Castellano"),
             ("Tabla periódica de repaso", "Notas sobre grupos, períodos y propiedades.", "clase", "Química"),
         ]
+        for recurso, (titulo, descripcion, tipo, materia_nombre) in zip(
+            RecursoAcademico.objects.order_by("pk"),
+            demos,
+        ):
+            recurso.titulo = titulo
+            recurso.descripcion = descripcion
+            recurso.tipo = tipo
+            recurso.materia = materia_objects[materia_nombre]
+            recurso.save(
+                update_fields=["titulo", "descripcion", "tipo", "materia"]
+            )
         created = 0
+        title_patterns = [
+            "lgebra",
+            "Apuntes",
+            "cinem",
+            "Vocabulary",
+            "Ortograf",
+            "Tabla",
+        ]
         for titulo, descripcion, tipo, materia_nombre in demos:
-            if RecursoAcademico.objects.filter(titulo=titulo).exists():
+            existing = RecursoAcademico.objects.filter(titulo=titulo).first()
+            if existing:
+                if existing.descripcion != descripcion:
+                    existing.descripcion = descripcion
+                    existing.save(update_fields=["descripcion"])
+                continue
+
+            pattern = title_patterns[demos.index((titulo, descripcion, tipo, materia_nombre))]
+            existing = RecursoAcademico.objects.filter(titulo__icontains=pattern).first()
+            if existing:
+                existing.titulo = titulo
+                existing.descripcion = descripcion
+                existing.tipo = tipo
+                existing.materia = materia_objects[materia_nombre]
+                existing.save(update_fields=["titulo", "descripcion", "tipo", "materia"])
+                continue
+
+            existing = RecursoAcademico.objects.filter(
+                materia=materia_objects[materia_nombre],
+                tipo=tipo,
+            ).first()
+            if existing:
+                existing.titulo = titulo
+                existing.descripcion = descripcion
+                existing.save(update_fields=["titulo", "descripcion"])
                 continue
             recurso = RecursoAcademico(
                 titulo=titulo,

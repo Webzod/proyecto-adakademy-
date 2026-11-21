@@ -1,6 +1,8 @@
 from datetime import timedelta
 import logging
 from pathlib import PurePosixPath
+import re
+import unicodedata
 
 from django.core.paginator import Paginator
 from django.db.models import F, Q
@@ -37,6 +39,39 @@ SUBJECTS = (
 )
 
 
+def normalize_search_text(value):
+    text = unicodedata.normalize("NFKD", str(value))
+    text = "".join(character for character in text if not unicodedata.combining(character))
+    return " ".join(text.casefold().split())
+
+
+def tokenize_search_text(value):
+    return re.findall(r"\w+", normalize_search_text(value), flags=re.UNICODE)
+
+
+def search_word_variants(word):
+    variants = {word}
+    if word.endswith("s"):
+        variants.add(word[:-1])
+    if word.endswith("es"):
+        variants.add(word[:-2])
+    return {variant for variant in variants if variant}
+
+
+def search_word_matches(query_word, resource_words):
+    variants = search_word_variants(query_word)
+    for resource_word in resource_words:
+        resource_variants = search_word_variants(resource_word)
+        if variants.intersection(resource_variants):
+            return True
+        if any(
+            len(variant) >= 3 and resource_word.startswith(variant)
+            for variant in variants
+        ):
+            return True
+    return False
+
+
 def index(request):
     recursos = RecursoAcademico.objects.select_related("materia")
     query = request.GET.get("q", "").strip()
@@ -52,12 +87,30 @@ def index(request):
         materia = ""
 
     if query:
-        recursos = recursos.filter(
-            Q(titulo__icontains=query)
-            | Q(descripcion__icontains=query)
-            | Q(materia__nombre__icontains=query)
-            | Q(materia__facultad__icontains=query)
-        )
+        query_words = tokenize_search_text(query)
+        matching_ids = []
+        for recurso in recursos:
+            searchable_text = normalize_search_text(
+                " ".join(
+                    (
+                        recurso.titulo,
+                        recurso.descripcion,
+                        recurso.materia.nombre,
+                        recurso.materia.facultad,
+                        recurso.materia.semestre,
+                        recurso.get_tipo_display(),
+                        recurso.tipo,
+                        recurso.archivo.name,
+                    )
+                )
+            )
+            searchable_words = tokenize_search_text(searchable_text)
+            if all(
+                search_word_matches(word, searchable_words)
+                for word in query_words
+            ):
+                matching_ids.append(recurso.pk)
+        recursos = recursos.filter(pk__in=matching_ids)
     if materia:
         recursos = recursos.filter(materia__nombre__iexact=materia)
     if tipo:
