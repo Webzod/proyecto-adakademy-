@@ -389,7 +389,6 @@ class ResourceManagementTests(TestCase):
         with self.assertRaises(ValidationError):
             self.recurso.full_clean()
 
-<<<<<<< HEAD
     def test_user_can_publish_comment(self):
         response = self.client.post(
             reverse("resources:detail", args=[self.recurso.pk]),
@@ -601,7 +600,6 @@ class ResourceManagementTests(TestCase):
 
         self.assertContains(response, self.recurso.titulo)
         self.assertNotContains(response, "Otro recurso")
-=======
 
 @override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
 class RegistrationTests(TestCase):
@@ -678,4 +676,3 @@ class RegistrationTests(TestCase):
         response = self.client.get(reverse("register"))
 
         self.assertRedirects(response, reverse("resources:index"))
->>>>>>> fe5b15ba969dcf698faf737a3615f4287e3fee9b

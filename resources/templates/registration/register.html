@@ -19,11 +19,7 @@
         <div class="form-field">
           <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-bold text-slate-700">{{ field.label }}</label>
           {{ field }}
-<<<<<<< HEAD
           {% if field.help_text %}<div class="mt-2 text-xs leading-5 text-slate-500">{{ field.help_text }}</div>{% endif %}
-=======
-          {% if field.help_text %}<div class="form-help mt-2 text-xs leading-5 text-slate-500">{{ field.help_text }}</div>{% endif %}
->>>>>>> fe5b15ba969dcf698faf737a3615f4287e3fee9b
           {% if field.errors %}<div class="mt-2 text-sm font-semibold text-rose-700" role="alert">{{ field.errors }}</div>{% endif %}
         </div>
       {% endfor %}
