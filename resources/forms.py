@@ -2,7 +2,43 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import RecursoAcademico
+from .models import Comentario, RecursoAcademico
+
+
+class RegistroForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username",)
+        widgets = {
+            "username": forms.TextInput(
+                attrs={
+                    "class": "form-input",
+                    "autocomplete": "username",
+                    "autofocus": True,
+                    "placeholder": "Elige un nombre de usuario",
+                }
+            ),
+        }
+        labels = {"username": "Nombre de usuario"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["password1"].widget.attrs.update(
+            {
+                "class": "form-input",
+                "autocomplete": "new-password",
+                "placeholder": "Crea una contraseña segura",
+            }
+        )
+        self.fields["password2"].widget.attrs.update(
+            {
+                "class": "form-input",
+                "autocomplete": "new-password",
+                "placeholder": "Escribe de nuevo tu contraseña",
+            }
+        )
+        self.fields["password1"].label = "Contraseña"
+        self.fields["password2"].label = "Confirmar contraseña"
 
 
 class RegistroForm(UserCreationForm):
@@ -85,3 +121,26 @@ class RecursoAcademicoForm(forms.ModelForm):
             self.fields["archivo"].help_text = (
                 "El archivo actual se conserva si no seleccionas uno nuevo."
             )
+
+
+class ComentarioForm(forms.ModelForm):
+    def clean_texto(self):
+        texto = self.cleaned_data["texto"].strip()
+        if not texto:
+            raise forms.ValidationError("El comentario no puede estar vacío.")
+        return texto
+
+    class Meta:
+        model = Comentario
+        fields = ("texto",)
+        widgets = {
+            "texto": forms.Textarea(
+                attrs={
+                    "class": "form-input form-textarea",
+                    "placeholder": "Comparte una duda o una explicación útil...",
+                    "rows": 4,
+                    "maxlength": 2000,
+                }
+            ),
+        }
+        labels = {"texto": "Tu comentario"}

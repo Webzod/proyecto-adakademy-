@@ -10,9 +10,10 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-canvas text-ink antialiased selection:bg-electric/15">
+  <div id="page-status" class="sr-only" role="status" aria-live="polite"></div>
   <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
     <div class="ambient-orb absolute -right-32 -top-40 h-[28rem] w-[28rem] rounded-full bg-violet-200/40 blur-3xl"></div>
-    <div class="ambient-orb ambient-orb-delayed absolute -left-40 top-[35rem] h-[24rem] w-[24rem] rounded-full bg-blue-100/60 blur-3xl"></div>
+    <div class="ambient-orb ambient-orb-delayed ambient-orb--blue absolute -left-40 top-[35rem] h-[24rem] w-[24rem] rounded-full bg-blue-100/60 blur-3xl"></div>
   </div>
   <header class="site-header sticky top-0 z-20 border-b border-slate-200/70 bg-white/70 backdrop-blur-xl">
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8" aria-label="Navegación principal">
@@ -35,7 +36,7 @@
       </div>
     </nav>
   </header>
-  <main class="mx-auto min-h-[calc(100vh-9rem)] max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
+  <main id="main-content" class="mx-auto min-h-[calc(100vh-9rem)] max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
     {% if messages %}
       <div class="mx-auto mb-6 max-w-4xl space-y-3" aria-live="polite">
         {% for message in messages %}
@@ -51,6 +52,19 @@
       <p>Comparte conocimiento, encuentra tu próximo apunte.</p>
     </div>
   </footer>
+  <script>
+    document.querySelectorAll('form[method="get"] select').forEach((select) => {
+      select.addEventListener("change", () => select.form.submit());
+    });
+    document.addEventListener("submit", (event) => {
+      const submit = event.target.querySelector('[type="submit"]');
+      if (!submit || submit.disabled) return;
+      submit.disabled = true;
+      submit.dataset.originalText = submit.textContent;
+      submit.textContent = "Procesando...";
+      document.getElementById("page-status").textContent = "Procesando solicitud";
+    });
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
