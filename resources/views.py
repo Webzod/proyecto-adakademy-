@@ -3,6 +3,7 @@ import logging
 from pathlib import PurePosixPath
 
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import F, Q
@@ -11,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
-from .forms import RecursoAcademicoForm
+from .forms import RegistroForm, RecursoAcademicoForm
 from .models import RecursoAcademico
 
 
@@ -32,6 +33,23 @@ SUBJECTS = (
     "Matemáticas",
     "Química",
 )
+
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("resources:index")
+
+    form = RegistroForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        login(request, user)
+        messages.success(
+            request,
+            "Tu cuenta está lista. ¡Te damos la bienvenida a Aula Abierta!",
+        )
+        return redirect("resources:index")
+
+    return render(request, "registration/register.html", {"form": form})
 
 
 def index(request):

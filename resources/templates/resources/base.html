@@ -30,6 +30,7 @@
           </form>
         {% else %}
           <a href="{% url 'login' %}" class="nav-link rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Iniciar sesión</a>
+          <a href="{% url 'register' %}" class="rounded-xl bg-electric px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-electric/15 transition hover:-translate-y-0.5 hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">Crear cuenta</a>
         {% endif %}
       </div>
     </nav>

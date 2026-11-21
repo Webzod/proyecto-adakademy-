@@ -19,10 +19,11 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Inicia sesión en `/accounts/login/` para gestionar recursos. No hay registro
-público: crea y administra las cuentas desde `/admin/` con un superusuario.
-El borrado solicita confirmación y elimina también los comentarios y el archivo
-subido asociado.
+Regístrate en `/accounts/register/` o inicia sesión en `/accounts/login/` para
+gestionar recursos. Las contraseñas nuevas deben cumplir las validaciones de
+seguridad configuradas por Django. También puedes administrar las cuentas desde
+`/admin/` con un superusuario. El borrado solicita confirmación y elimina
+también los comentarios y el archivo subido asociado.
 
 La hoja de estilos compilada se sirve desde `resources/static/resources/css/`;
 vuelve a ejecutar `npm run build:css` cuando cambies plantillas, configuración

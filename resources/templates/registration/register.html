@@ -1,0 +1,31 @@
+{% extends "resources/base.html" %}
+
+{% block title %}Crear cuenta · Aula Abierta{% endblock %}
+
+{% block content %}
+<section class="enter mx-auto max-w-lg">
+  <div class="glass overflow-hidden rounded-3xl shadow-[0_20px_70px_-45px_rgba(25,25,70,.4)]">
+    <div class="bg-gradient-to-br from-violet-50/90 via-white/50 to-blue-50/80 px-6 py-8 text-center sm:px-9">
+      <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-electric text-xl font-extrabold text-white shadow-lg shadow-electric/20">A</span>
+      <h1 class="mt-5 text-3xl font-extrabold tracking-[-.04em]">Únete a Aula Abierta</h1>
+      <p class="mt-2 text-sm leading-6 text-slate-500">Crea tu cuenta para compartir recursos y aprender en comunidad.</p>
+    </div>
+    <form method="post" class="space-y-5 p-6 sm:p-9" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-errors" role="alert">{{ form.non_field_errors }}</div>
+      {% endif %}
+      {% for field in form %}
+        <div class="form-field">
+          <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-bold text-slate-700">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="form-help mt-2 text-xs leading-5 text-slate-500">{{ field.help_text }}</div>{% endif %}
+          {% if field.errors %}<div class="mt-2 text-sm font-semibold text-rose-700" role="alert">{{ field.errors }}</div>{% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="action-button w-full rounded-xl bg-electric px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-electric/20 hover:-translate-y-0.5 hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">Crear mi cuenta</button>
+      <p class="text-center text-sm text-slate-500">¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="font-bold text-electric hover:text-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Inicia sesión</a></p>
+    </form>
+  </div>
+</section>
+{% endblock %}

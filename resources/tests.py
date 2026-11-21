@@ -314,3 +314,80 @@ class ResourceManagementTests(TestCase):
         self.recurso.archivo = oversized
         with self.assertRaises(ValidationError):
             self.recurso.full_clean()
+
+
+@override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"])
+class RegistrationTests(TestCase):
+    def test_registration_page_renders_from_login_and_navigation(self):
+        response = self.client.get(reverse("register"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Únete a Aula Abierta")
+        self.assertContains(response, "autocomplete=\"new-password\"")
+
+        login_response = self.client.get(reverse("login"))
+        self.assertContains(login_response, reverse("register"))
+
+        index_response = self.client.get(reverse("resources:index"))
+        self.assertContains(index_response, reverse("register"))
+
+    def test_valid_registration_creates_user_and_signs_them_in(self):
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "nueva_estudiante",
+                "password1": "Una-clave-segura-2026!",
+                "password2": "Una-clave-segura-2026!",
+            },
+        )
+
+        user = get_user_model().objects.get(username="nueva_estudiante")
+        self.assertRedirects(response, reverse("resources:index"))
+        self.assertTrue(user.check_password("Una-clave-segura-2026!"))
+        self.assertEqual(
+            int(self.client.session["_auth_user_id"]),
+            user.pk,
+        )
+
+    def test_registration_rejects_mismatched_passwords(self):
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "nueva_estudiante",
+                "password1": "Una-clave-segura-2026!",
+                "password2": "Otra-clave-segura-2026!",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors.get("password2"))
+        self.assertFalse(
+            get_user_model().objects.filter(username="nueva_estudiante").exists()
+        )
+
+    def test_registration_rejects_numeric_password(self):
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "nueva_estudiante",
+                "password1": "12345678",
+                "password2": "12345678",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors.get("password2"))
+        self.assertFalse(
+            get_user_model().objects.filter(username="nueva_estudiante").exists()
+        )
+
+    def test_authenticated_user_cannot_create_another_account(self):
+        user = get_user_model().objects.create_user(
+            username="usuario_existente",
+            password="Una-clave-segura-2026!",
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("register"))
+
+        self.assertRedirects(response, reverse("resources:index"))
