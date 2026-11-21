@@ -10,28 +10,196 @@ body {
   font-family: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
+.ambient-orb {
+  animation: orb-drift 11s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.ambient-orb--blue {
+  animation-delay: -5s;
+  animation-duration: 14s;
+}
+
 .glass {
   background: rgba(255, 255, 255, 0.76);
   border: 1px solid rgba(226, 232, 240, 0.85);
   backdrop-filter: blur(18px);
 }
 
-.resource-card {
-  animation: rise-in 0.55s both;
+.brand-mark {
+  animation: brand-arrive 0.8s 0.1s both;
   transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s ease;
 }
 
-.resource-card:hover {
-  transform: translateY(-7px) scale(1.012);
-  box-shadow: 0 24px 55px -28px rgba(48, 42, 120, 0.32);
-  border-color: rgba(85, 70, 245, 0.25);
+.group:hover .brand-mark {
+  transform: rotate(-10deg) scale(1.12);
+  box-shadow: 0 12px 30px -8px rgba(85, 70, 245, 0.75);
+}
+
+.hero-kicker {
+  animation: reveal-down 0.7s both;
+}
+
+.hero-pulse {
+  animation: pulse-glow 1.8s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(85, 70, 245, 0.5);
+}
+
+.hero-title {
+  animation: hero-arrive 0.95s 0.08s both;
+  transform-origin: left center;
+}
+
+.hero-title-accent {
+  display: inline-block;
+  background: linear-gradient(100deg, #5546f5 12%, #a855f7 42%, #2563eb 72%, #5546f5 92%);
+  background-size: 220% auto;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 5s ease-in-out infinite;
+  filter: drop-shadow(0 8px 18px rgba(85, 70, 245, 0.16));
+}
+
+.hero-subtitle {
+  animation: reveal-up 0.8s 0.25s both;
+}
+
+.search-panel {
+  animation: panel-arrive 0.85s 0.2s both;
+  transition:
+    box-shadow 0.35s ease,
+    transform 0.35s ease;
+}
+
+.search-panel:focus-within {
+  box-shadow: 0 22px 60px -28px rgba(85, 70, 245, 0.42);
+  transform: translateY(-3px);
+}
+
+.search-control {
+  transition:
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.search-control:hover,
+.search-control:focus-within {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 24px -16px rgba(85, 70, 245, 0.5);
+  transform: translateY(-2px);
+}
+
+.search-submit {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.25s ease;
+}
+
+.search-submit::after {
+  position: absolute;
+  z-index: -1;
+  inset: -50% auto -50% -70%;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  content: "";
+  transform: skewX(-20deg);
+  transition: left 0.55s ease;
+}
+
+.search-submit:hover::after {
+  left: 130%;
+}
+
+.search-submit:hover {
+  box-shadow: 0 14px 32px -12px rgba(85, 70, 245, 0.7);
+  transform: translateY(-3px) scale(1.025);
+}
+
+.search-submit:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.resource-card {
+  position: relative;
+  animation: card-arrive 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.resource-card::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(112deg, transparent 25%, rgba(255, 255, 255, 0.42) 48%, transparent 68%);
+  content: "";
+  pointer-events: none;
+  transform: translateX(-130%);
+}
+
+.resource-card:hover,
+.resource-card:focus-within {
+  border-color: rgba(85, 70, 245, 0.42);
+  box-shadow:
+    0 28px 65px -30px rgba(48, 42, 120, 0.42),
+    0 0 0 1px rgba(85, 70, 245, 0.08);
+  transform: translateY(-9px) scale(1.018);
+}
+
+.resource-card:hover::after,
+.resource-card:focus-within::after {
+  transition: transform 0.8s ease;
+  transform: translateX(130%);
+}
+
+.resource-card h3 {
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.resource-card:hover h3,
+.resource-card:focus-within h3 {
+  transform: translateX(3px);
 }
 
 .enter {
-  animation: rise-in 0.65s both;
+  animation: reveal-up 0.7s both;
+}
+
+.detail-panel {
+  animation: panel-arrive 0.8s 0.1s both;
+}
+
+.detail-title {
+  animation: reveal-up 0.7s 0.25s both;
+}
+
+.detail-action {
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.detail-action:hover {
+  box-shadow: 0 14px 30px -14px rgba(85, 70, 245, 0.55);
+  transform: translateY(-3px);
+}
+
+.conversation-panel {
+  animation: reveal-up 0.75s 0.3s both;
+}
+
+.comment-entry {
+  animation: reveal-up 0.55s both;
+  animation-delay: calc(var(--comment-order, 0) * 90ms);
 }
 
 .form-input {
@@ -54,10 +222,10 @@ body {
   resize: vertical;
 }
 
-@keyframes rise-in {
+@keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(26px);
   }
   to {
     opacity: 1;
@@ -65,13 +233,130 @@ body {
   }
 }
 
+@keyframes reveal-down {
+  from {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-arrive {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes panel-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes card-arrive {
+  0% {
+    opacity: 0;
+    transform: translateY(44px) scale(0.94) rotateX(7deg);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.005) rotateX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0);
+  }
+}
+
+@keyframes brand-arrive {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(-35deg);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1.12) rotate(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes orb-drift {
+  from {
+    transform: translate3d(-12px, -18px, 0) scale(0.92);
+  }
+  to {
+    transform: translate3d(22px, 28px, 0) scale(1.12);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(85, 70, 245, 0.42);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(85, 70, 245, 0);
+    transform: scale(1.08);
+  }
+}
+
+@keyframes gradient-flow {
+  0%,
+  100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+    animation: none !important;
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+    transition: none !important;
+  }
+
+  .group:hover .brand-mark,
+  .search-panel:focus-within,
+  .search-control:hover,
+  .search-control:focus-within,
+  .search-submit:hover,
+  .search-submit:active,
+  .resource-card:hover,
+  .resource-card:focus-within,
+  .resource-card:hover h3,
+  .resource-card:focus-within h3,
+  .resource-card:hover::after,
+  .resource-card:focus-within::after,
+  .detail-action:hover {
+    transform: none !important;
+  }
+
+  .search-submit::after {
+    display: none;
   }
 }
