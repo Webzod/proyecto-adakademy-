@@ -21,8 +21,8 @@
         <span class="text-base font-extrabold tracking-tight">aula<span class="text-electric">abierta</span></span>
       </a>
       <div class="flex items-center gap-2 sm:gap-7">
-        <a href="{% url 'resources:index' %}" class="nav-link rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Explorar</a>
         {% if user.is_authenticated %}
+          <a href="{% url 'resources:index' %}" class="nav-link rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Explorar</a>
           <a href="{% url 'resources:create' %}" class="nav-link rounded-lg px-3 py-2 text-sm font-semibold text-electric hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Publicar recurso</a>
           <form method="post" action="{% url 'logout' %}" class="inline-flex">
             {% csrf_token %}

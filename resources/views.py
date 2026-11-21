@@ -52,6 +52,7 @@ def register(request):
     return render(request, "registration/register.html", {"form": form})
 
 
+@login_required
 def index(request):
     recursos = RecursoAcademico.objects.select_related("materia")
     query = request.GET.get("q", "").strip()
@@ -97,6 +98,7 @@ def index(request):
     )
 
 
+@login_required
 def detail(request, pk):
     recurso = get_object_or_404(
         RecursoAcademico.objects.select_related("materia").prefetch_related(
@@ -197,6 +199,7 @@ def resource_delete(request, pk):
     )
 
 
+@login_required
 def download(request, pk):
     recurso = get_object_or_404(RecursoAcademico, pk=pk)
     try:

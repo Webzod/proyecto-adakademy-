@@ -249,6 +249,49 @@ html {
   box-shadow: 0 0 0 4px rgba(85, 70, 245, 0.1);
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field .form-input {
+  padding-right: 3.25rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    color var(--motion-duration) var(--motion-ease),
+    background-color var(--motion-duration) var(--motion-ease);
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  background: #f1f5f9;
+  color: #5546f5;
+  outline: none;
+}
+
+.password-toggle:focus-visible {
+  box-shadow: 0 0 0 3px rgba(85, 70, 245, 0.16);
+}
+
+.password-eye {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .form-textarea {
   min-height: 9rem;
   resize: vertical;

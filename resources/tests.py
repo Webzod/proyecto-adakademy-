@@ -31,11 +31,28 @@ class ResourceReadTests(TestCase):
                 content_type="application/pdf",
             ),
         )
+        self.user = get_user_model().objects.create_user(
+            username="lector",
+        )
+        self.client.force_login(self.user)
 
     def tearDown(self):
         self.media_override.disable()
         self.media_dir.cleanup()
         super().tearDown()
+
+    def test_resource_pages_require_login(self):
+        self.client.logout()
+        resource_urls = (
+            reverse("resources:index"),
+            reverse("resources:detail", args=[self.recurso.pk]),
+            reverse("resources:download", args=[self.recurso.pk]),
+        )
+
+        for url in resource_urls:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertRedirects(response, f"{reverse('login')}?next={url}")
 
     def test_search_matches_description_and_faculty(self):
         response = self.client.get("/", {"q": "práctica"})
@@ -324,12 +341,32 @@ class RegistrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Únete a Aula Abierta")
         self.assertContains(response, "autocomplete=\"new-password\"")
+        self.assertContains(response, 'data-password-toggle')
+        self.assertContains(response, 'aria-label="Mostrar contraseña"', count=2)
 
         login_response = self.client.get(reverse("login"))
         self.assertContains(login_response, reverse("register"))
+        self.assertNotContains(login_response, "Explorar")
 
         index_response = self.client.get(reverse("resources:index"))
-        self.assertContains(index_response, reverse("register"))
+        self.assertRedirects(
+            index_response,
+            f"{reverse('login')}?next={reverse('resources:index')}",
+        )
+
+    def test_authenticated_user_sees_site_options_on_homepage(self):
+        user = get_user_model().objects.create_user(
+            username="usuario",
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("resources:index"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Explorar")
+        self.assertContains(response, "Publicar recurso")
+        self.assertContains(response, "Salir")
+        self.assertNotContains(response, "Iniciar sesión")
 
     def test_valid_registration_creates_user_and_signs_them_in(self):
         response = self.client.post(

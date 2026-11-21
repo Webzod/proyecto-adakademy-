@@ -18,7 +18,19 @@
       {% for field in form %}
         <div class="form-field">
           <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-bold text-slate-700">{{ field.label }}</label>
-          {{ field }}
+          {% if field.name == "password1" or field.name == "password2" %}
+            <div class="password-field">
+              {{ field }}
+              <button type="button" class="password-toggle" data-password-toggle aria-label="Mostrar contraseña" aria-pressed="false">
+                <svg class="password-eye" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                  <circle cx="12" cy="12" r="2.5"></circle>
+                </svg>
+              </button>
+            </div>
+          {% else %}
+            {{ field }}
+          {% endif %}
           {% if field.help_text %}<div class="form-help mt-2 text-xs leading-5 text-slate-500">{{ field.help_text }}</div>{% endif %}
           {% if field.errors %}<div class="mt-2 text-sm font-semibold text-rose-700" role="alert">{{ field.errors }}</div>{% endif %}
         </div>
@@ -28,4 +40,19 @@
     </form>
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const field = button.closest(".password-field").querySelector("input");
+      const isVisible = field.type === "text";
+
+      field.type = isVisible ? "password" : "text";
+      button.setAttribute("aria-pressed", String(!isVisible));
+      button.setAttribute("aria-label", isVisible ? "Mostrar contraseña" : "Ocultar contraseña");
+    });
+  });
+</script>
 {% endblock %}
