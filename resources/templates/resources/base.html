@@ -10,6 +10,7 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-canvas text-ink antialiased selection:bg-electric/15">
+  <div id="page-status" class="sr-only" role="status" aria-live="polite"></div>
   <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
   <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
     <div class="absolute -right-32 -top-40 h-[28rem] w-[28rem] rounded-full bg-violet-200/40 blur-3xl"></div>
@@ -36,6 +37,16 @@
       <p>Comparte conocimiento, encuentra tu próximo apunte.</p>
     </div>
   </footer>
+  <script>
+    document.addEventListener("submit", (event) => {
+      const submit = event.target.querySelector('[type="submit"]');
+      if (!submit || submit.disabled) return;
+      submit.disabled = true;
+      submit.dataset.originalText = submit.textContent;
+      submit.textContent = "Procesando...";
+      document.getElementById("page-status").textContent = "Procesando solicitud";
+    });
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

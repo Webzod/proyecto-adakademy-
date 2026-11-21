@@ -223,6 +223,78 @@ class ResourceReadTests(TestCase):
             self.client.session["favorite_resources"],
         )
 
+    def test_favorite_rejects_external_redirect(self):
+        response = self.client.post(
+            reverse("resources:favorite", args=[self.recurso.pk]),
+            {"next": "https://example.com"},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("resources:detail", args=[self.recurso.pk]),
+        )
+
+    def test_comment_rejects_excessive_length(self):
+        response = self.client.post(
+            reverse("resources:detail", args=[self.recurso.pk]),
+            {"texto": "a" * 2001},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "2000")
+        self.assertFalse(Comentario.objects.exists())
+
+    def test_comment_rate_limit(self):
+        url = reverse("resources:detail", args=[self.recurso.pk])
+        for number in range(5):
+            response = self.client.post(url, {"texto": f"Comentario {number}"})
+            self.assertEqual(response.status_code, 302)
+
+        response = self.client.post(url, {"texto": "Último comentario"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "publicado varios comentarios muy rápido")
+        self.assertEqual(Comentario.objects.count(), 5)
+
+    def test_resource_file_content_must_match_extension(self):
+        self.recurso.archivo = SimpleUploadedFile("imagen.png", b"no es una imagen")
+        with self.assertRaises(ValidationError):
+            self.recurso.full_clean()
+
+    def test_saved_resources_pagination_preserves_filter(self):
+        self.client.post(
+            reverse("resources:favorite", args=[self.recurso.pk]),
+            {"next": "/"},
+        )
+        for number in range(12):
+            saved = RecursoAcademico.objects.create(
+                titulo=f"Guardado {number}",
+                descripcion="Material guardado.",
+                materia=self.materia,
+                archivo=SimpleUploadedFile(f"guardado-{number}.pdf", b"%PDF-fake"),
+            )
+            self.client.post(
+                reverse("resources:favorite", args=[saved.pk]),
+                {"next": "/"},
+            )
+
+        response = self.client.get("/", {"guardados": "1", "page": "2"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "guardados=1")
+
+    def test_detail_back_link_preserves_index_filters(self):
+        self.client.get("/", {"q": "álgebra", "materia": "Biología"})
+
+        response = self.client.get(
+            reverse("resources:detail", args=[self.recurso.pk])
+        )
+
+        self.assertEqual(
+            response.context["back_url"],
+            "/?q=%C3%A1lgebra&materia=Biolog%C3%ADa",
+        )
+
     def test_saved_resources_filter(self):
         self.client.post(
             reverse("resources:favorite", args=[self.recurso.pk]),

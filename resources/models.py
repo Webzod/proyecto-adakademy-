@@ -1,7 +1,7 @@
 from django.core.validators import FileExtensionValidator
 from django.db import models
 
-from .validators import validate_file_size
+from .validators import validate_file_size, validate_resource_content
 
 
 class Materia(models.Model):
@@ -51,6 +51,7 @@ class RecursoAcademico(models.Model):
                 ]
             ),
             validate_file_size,
+            validate_resource_content,
         ],
     )
     materia = models.ForeignKey(
@@ -77,7 +78,7 @@ class Comentario(models.Model):
         on_delete=models.CASCADE,
         related_name="comentarios",
     )
-    texto = models.TextField()
+    texto = models.TextField(max_length=2000)
     fecha = models.DateTimeField(auto_now_add=True)
 
     class Meta:

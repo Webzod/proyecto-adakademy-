@@ -34,6 +34,8 @@ producción y usa los dominios reales, separados por comas, en `DJANGO_ALLOWED_H
 $env:DJANGO_SECRET_KEY = (& .\venv\Scripts\python.exe -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
 $env:DJANGO_DEBUG = "False"
 $env:DJANGO_ALLOWED_HOSTS = "aula.ejemplo.edu"
+$env:DJANGO_CSRF_TRUSTED_ORIGINS = "https://aula.ejemplo.edu"
+$env:DJANGO_SECURE_SSL_REDIRECT = "True"
 python manage.py collectstatic --noinput
 ```
 

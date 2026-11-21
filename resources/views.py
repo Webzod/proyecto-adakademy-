@@ -8,6 +8,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import ComentarioForm
 from .models import RecursoAcademico
@@ -17,6 +18,9 @@ logger = logging.getLogger(__name__)
 VIEW_COUNT_WINDOW_SECONDS = 30 * 60
 VIEW_SESSION_KEY = "resource_views"
 FAVORITES_SESSION_KEY = "favorite_resources"
+COMMENT_SESSION_KEY = "resource_comments"
+MAX_COMMENTS_PER_WINDOW = 5
+COMMENT_WINDOW_SECONDS = 60
 SORT_OPTIONS = {
     "recientes": ("-fecha_subida", "-pk"),
     "populares": ("-vistas", "-fecha_subida", "-pk"),
@@ -73,6 +77,7 @@ def index(request):
         orden = "recientes"
     recursos = recursos.order_by(*SORT_OPTIONS[orden])
     page_obj = Paginator(recursos, PAGE_SIZE).get_page(request.GET.get("page"))
+    request.session["resource_index_url"] = request.get_full_path()
 
     return render(
         request,
@@ -120,10 +125,25 @@ def detail(request, pk):
     if request.method == "POST":
         form = ComentarioForm(request.POST)
         if form.is_valid():
-            comentario = form.save(commit=False)
-            comentario.recurso = recurso
-            comentario.save()
-            return redirect("resources:detail", pk=recurso.pk)
+            comment_times = request.session.get(COMMENT_SESSION_KEY, [])
+            cutoff = now - timedelta(seconds=COMMENT_WINDOW_SECONDS)
+            recent_comments = []
+            for timestamp in comment_times if isinstance(comment_times, list) else []:
+                parsed = parse_datetime(timestamp)
+                if parsed is not None and timezone.is_aware(parsed) and parsed >= cutoff:
+                    recent_comments.append(timestamp)
+            if len(recent_comments) >= MAX_COMMENTS_PER_WINDOW:
+                form.add_error(
+                    "texto",
+                    "Has publicado varios comentarios muy rápido. Espera un minuto e inténtalo de nuevo.",
+                )
+            else:
+                comentario = form.save(commit=False)
+                comentario.recurso = recurso
+                comentario.save()
+                recent_comments.append(now.isoformat())
+                request.session[COMMENT_SESSION_KEY] = recent_comments
+                return redirect("resources:detail", pk=recurso.pk)
     else:
         form = ComentarioForm()
 
@@ -139,6 +159,7 @@ def detail(request, pk):
             "comment_form": form,
             "is_favorite": str(recurso.pk) in {str(resource_id) for resource_id in favoritos},
             "extension": extension,
+            "back_url": request.session.get("resource_index_url", "/"),
         },
     )
 
@@ -160,7 +181,11 @@ def toggle_favorite(request, pk):
             key=int,
         )
     next_url = request.POST.get("next")
-    if next_url:
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
         return redirect(next_url)
     return redirect("resources:detail", pk=recurso.pk)
 

@@ -100,11 +100,11 @@
   {% if page_obj.paginator.num_pages > 1 %}
     <nav class="mt-9 flex flex-wrap items-center justify-center gap-2" aria-label="Paginación de recursos">
       {% if page_obj.has_previous %}
-        <a href="?q={{ query|urlencode }}&amp;materia={{ materia_seleccionada|urlencode }}&amp;tipo={{ tipo_seleccionado|urlencode }}&amp;orden={{ orden }}&amp;page={{ page_obj.previous_page_number }}" class="rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-electric/30 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Anterior</a>
+        <a href="?q={{ query|urlencode }}&amp;materia={{ materia_seleccionada|urlencode }}&amp;tipo={{ tipo_seleccionado|urlencode }}&amp;orden={{ orden }}{% if favoritos_solo %}&amp;guardados=1{% endif %}&amp;page={{ page_obj.previous_page_number }}" class="rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-electric/30 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Anterior</a>
       {% endif %}
       <span class="px-3 text-sm font-semibold text-slate-500" aria-current="page">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
       {% if page_obj.has_next %}
-        <a href="?q={{ query|urlencode }}&amp;materia={{ materia_seleccionada|urlencode }}&amp;tipo={{ tipo_seleccionado|urlencode }}&amp;orden={{ orden }}&amp;page={{ page_obj.next_page_number }}" class="rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-electric/30 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Siguiente</a>
+        <a href="?q={{ query|urlencode }}&amp;materia={{ materia_seleccionada|urlencode }}&amp;tipo={{ tipo_seleccionado|urlencode }}&amp;orden={{ orden }}{% if favoritos_solo %}&amp;guardados=1{% endif %}&amp;page={{ page_obj.next_page_number }}" class="rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-electric/30 hover:text-electric focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Siguiente</a>
       {% endif %}
     </nav>
   {% endif %}
