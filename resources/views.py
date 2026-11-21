@@ -5,6 +5,7 @@ import re
 import unicodedata
 
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import F, Q
@@ -14,11 +15,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.http import url_has_allowed_host_and_scheme
 
-<<<<<<< HEAD
-from .forms import RecursoAcademicoForm
-=======
-from .forms import ComentarioForm
->>>>>>> feature/mejoras
+from .forms import ComentarioForm, RegistroForm, RecursoAcademicoForm
 from .models import RecursoAcademico
 
 
@@ -43,6 +40,23 @@ SUBJECTS = (
     "Matemáticas",
     "Química",
 )
+
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("resources:index")
+
+    form = RegistroForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST" and form.is_valid():
+        user = form.save()
+        login(request, user)
+        messages.success(
+            request,
+            "Tu cuenta está lista. ¡Te damos la bienvenida a Aula Abierta!",
+        )
+        return redirect("resources:index")
+
+    return render(request, "registration/register.html", {"form": form})
 
 
 def normalize_search_text(value):
@@ -223,7 +237,6 @@ def detail(request, pk):
     )
 
 
-<<<<<<< HEAD
 @login_required
 def resource_create(request):
     form = RecursoAcademicoForm(
@@ -293,7 +306,8 @@ def resource_delete(request, pk):
         "resources/resource_confirm_delete.html",
         {"recurso": recurso},
     )
-=======
+
+
 def toggle_favorite(request, pk):
     recurso = get_object_or_404(RecursoAcademico, pk=pk)
     if request.method == "POST":
@@ -318,7 +332,6 @@ def toggle_favorite(request, pk):
     ):
         return redirect(next_url)
     return redirect("resources:detail", pk=recurso.pk)
->>>>>>> feature/mejoras
 
 
 def download(_request, pk):

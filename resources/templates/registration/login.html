@@ -26,6 +26,7 @@
         {% if form.password.errors %}<div class="mt-2 text-sm font-semibold text-rose-700" role="alert">{{ form.password.errors }}</div>{% endif %}
       </div>
       <button type="submit" class="action-button w-full rounded-xl bg-electric px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-electric/20 hover:-translate-y-0.5 hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric">Iniciar sesión</button>
+      <p class="text-center text-sm text-slate-500">¿Aún no tienes cuenta? <a href="{% url 'register' %}" class="font-bold text-electric hover:text-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric">Regístrate aquí</a></p>
     </form>
   </div>
 </section>
