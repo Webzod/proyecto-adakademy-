@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import Materia, RecursoAcademico
+from .models import Comentario, Materia, RecursoAcademico
 from .validators import MAX_RESOURCE_FILE_SIZE
 
 
@@ -314,3 +314,215 @@ class ResourceManagementTests(TestCase):
         self.recurso.archivo = oversized
         with self.assertRaises(ValidationError):
             self.recurso.full_clean()
+
+    def test_user_can_publish_comment(self):
+        response = self.client.post(
+            reverse("resources:detail", args=[self.recurso.pk]),
+            {"texto": "Este recurso fue muy útil."},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("resources:detail", args=[self.recurso.pk]),
+        )
+        self.assertTrue(
+            Comentario.objects.filter(
+                recurso=self.recurso,
+                texto="Este recurso fue muy útil.",
+            ).exists()
+        )
+
+    def test_comment_cannot_be_empty(self):
+        response = self.client.post(
+            reverse("resources:detail", args=[self.recurso.pk]),
+            {"texto": "   "},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Comentario.objects.exists())
+
+    def test_resource_can_be_saved_and_unsaved_in_session(self):
+        url = reverse("resources:favorite", args=[self.recurso.pk])
+        first_response = self.client.post(url, {"next": "/"})
+        second_response = self.client.post(url, {"next": "/"})
+
+        self.assertRedirects(first_response, "/")
+        self.assertRedirects(second_response, "/")
+        self.assertNotIn(
+            str(self.recurso.pk),
+            self.client.session["favorite_resources"],
+        )
+
+    def test_favorite_rejects_external_redirect(self):
+        response = self.client.post(
+            reverse("resources:favorite", args=[self.recurso.pk]),
+            {"next": "https://example.com"},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("resources:detail", args=[self.recurso.pk]),
+        )
+
+    def test_comment_rejects_excessive_length(self):
+        response = self.client.post(
+            reverse("resources:detail", args=[self.recurso.pk]),
+            {"texto": "a" * 2001},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "2000")
+        self.assertFalse(Comentario.objects.exists())
+
+    def test_comment_rate_limit(self):
+        url = reverse("resources:detail", args=[self.recurso.pk])
+        for number in range(5):
+            response = self.client.post(url, {"texto": f"Comentario {number}"})
+            self.assertEqual(response.status_code, 302)
+
+        response = self.client.post(url, {"texto": "Último comentario"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "publicado varios comentarios muy rápido")
+        self.assertEqual(Comentario.objects.count(), 5)
+
+    def test_resource_file_content_must_match_extension(self):
+        self.recurso.archivo = SimpleUploadedFile("imagen.png", b"no es una imagen")
+        with self.assertRaises(ValidationError):
+            self.recurso.full_clean()
+
+    def test_saved_resources_pagination_preserves_filter(self):
+        self.client.post(
+            reverse("resources:favorite", args=[self.recurso.pk]),
+            {"next": "/"},
+        )
+        for number in range(12):
+            saved = RecursoAcademico.objects.create(
+                titulo=f"Guardado {number}",
+                descripcion="Material guardado.",
+                materia=self.materia,
+                archivo=SimpleUploadedFile(f"guardado-{number}.pdf", b"%PDF-fake"),
+            )
+            self.client.post(
+                reverse("resources:favorite", args=[saved.pk]),
+                {"next": "/"},
+            )
+
+        response = self.client.get("/", {"guardados": "1", "page": "2"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "guardados=1")
+
+    def test_detail_back_link_preserves_index_filters(self):
+        self.client.get("/", {"q": "álgebra", "materia": "Biología"})
+
+        response = self.client.get(
+            reverse("resources:detail", args=[self.recurso.pk])
+        )
+
+        self.assertEqual(
+            response.context["back_url"],
+            "/?q=%C3%A1lgebra&materia=Biolog%C3%ADa",
+        )
+
+    def test_combined_filters_and_sort_are_applied(self):
+        RecursoAcademico.objects.create(
+            titulo="Guía avanzada",
+            descripcion="Ejercicios de práctica.",
+            tipo=RecursoAcademico.Tipo.GUIA,
+            materia=self.materia,
+            archivo=SimpleUploadedFile("avanzada.pdf", b"%PDF-fake"),
+        )
+
+        response = self.client.get(
+            "/",
+            {
+                "q": "guía",
+                "materia": "Biología",
+                "tipo": RecursoAcademico.Tipo.GUIA,
+                "orden": "titulo",
+            },
+        )
+
+        titles = [
+            resource.titulo
+            for resource in response.context["page_obj"].object_list
+        ]
+        self.assertIn("Guía de álgebra", titles)
+        self.assertIn("Guía avanzada", titles)
+        self.assertEqual(titles, sorted(titles, key=str.casefold))
+
+    def test_filter_controls_submit_automatically(self):
+        response = self.client.get("/")
+
+        self.assertContains(
+            response,
+            'document.querySelectorAll(\'form[method="get"] select\')',
+        )
+
+    def test_search_matches_accentless_and_resource_type(self):
+        response = self.client.get("/", {"q": "guia"})
+        self.assertContains(response, "Guía de álgebra")
+
+        response = self.client.get("/", {"q": "estudio"})
+        self.assertContains(response, "Guía de álgebra")
+
+    def test_search_matches_plural_and_terms_across_resource_fields(self):
+        response = self.client.get("/", {"q": "guías biología"})
+        self.assertContains(response, "Guía de álgebra")
+
+    def test_search_matches_plural_apuntes_with_singular_title(self):
+        RecursoAcademico.objects.create(
+            titulo="Apunte de historia",
+            descripcion="Material de consulta.",
+            tipo=RecursoAcademico.Tipo.APUNTE,
+            materia=self.materia,
+            archivo=SimpleUploadedFile("historia.txt", b"contenido"),
+        )
+
+        response = self.client.get("/", {"q": "apuntes"})
+
+        self.assertContains(response, "Apunte de historia")
+
+    def test_search_matches_filename(self):
+        self.recurso.archivo.name = "recursos/material-examen.pdf"
+        self.recurso.save(update_fields=["archivo"])
+
+        response = self.client.get("/", {"q": "examen"})
+
+        self.assertContains(response, self.recurso.titulo)
+
+    def test_apuntes_search_matches_title(self):
+        RecursoAcademico.objects.create(
+            titulo="Apuntes de célula",
+            descripcion="Resumen celular.",
+            tipo=RecursoAcademico.Tipo.APUNTE,
+            materia=self.materia,
+            archivo=SimpleUploadedFile("apuntes.txt", b"contenido"),
+        )
+
+        response = self.client.get("/", {"q": "apuntes"})
+
+        self.assertContains(response, "Apuntes de célula")
+
+    def test_skip_navigation_link_is_not_rendered(self):
+        response = self.client.get("/")
+
+        self.assertNotContains(response, "Saltar al contenido principal")
+
+    def test_saved_resources_filter(self):
+        self.client.post(
+            reverse("resources:favorite", args=[self.recurso.pk]),
+            {"next": "/"},
+        )
+        RecursoAcademico.objects.create(
+            titulo="Otro recurso",
+            descripcion="Material diferente.",
+            materia=self.materia,
+            archivo=SimpleUploadedFile("otro.pdf", b"contenido"),
+        )
+
+        response = self.client.get("/", {"guardados": "1"})
+
+        self.assertContains(response, self.recurso.titulo)
+        self.assertNotContains(response, "Otro recurso")

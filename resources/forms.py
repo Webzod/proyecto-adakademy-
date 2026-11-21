@@ -1,5 +1,6 @@
 from django import forms
 
+<<<<<<< HEAD
 from .models import RecursoAcademico
 
 
@@ -47,3 +48,30 @@ class RecursoAcademicoForm(forms.ModelForm):
             self.fields["archivo"].help_text = (
                 "El archivo actual se conserva si no seleccionas uno nuevo."
             )
+=======
+from .models import Comentario
+
+
+class ComentarioForm(forms.ModelForm):
+    def clean_texto(self):
+        texto = self.cleaned_data["texto"].strip()
+        if not texto:
+            raise forms.ValidationError("El comentario no puede estar vacío.")
+        return texto
+
+    class Meta:
+        model = Comentario
+        fields = ("texto",)
+        widgets = {
+            "texto": forms.Textarea(
+                attrs={
+                    "class": "form-input form-textarea",
+                    "placeholder": "Comparte una duda o una explicación útil...",
+                    "rows": 4,
+                    "maxlength": 2000,
+                }
+            ),
+        }
+        labels = {"texto": "Tu comentario"}
+
+>>>>>>> feature/mejoras
